@@ -1,0 +1,22 @@
+{
+  "posts": [
+    {
+      "id": "sample-1",
+      "author": "AI Pulse",
+      "text": "AI Pulse 聚合 AI 领域人物动态，并将分析结果保存为前端可读取的 JSON 数据。",
+      "source_url": "https://github.com/HaoooLee/ai-pulse"
+    },
+    {
+      "id": "sample-2",
+      "author": "AI Pulse",
+      "text": "项目使用 React、Vite 和 Tailwind CSS 构建前端，并提供登录与收藏功能。",
+      "source_url": "https://github.com/HaoooLee/ai-pulse"
+    },
+    {
+      "id": "sample-3",
+      "author": "AI Pulse",
+      "text": "数据采集与模型分析应分离，采集失败时保留最近一次成功生成的数据。",
+      "source_url": "https://github.com/HaoooLee/ai-pulse"
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "categories": {
+    "openai": {
+      "name": "OpenAI",
+      "icon": "🔮",
+      "color": "#10A37F",
+      "group": "四大实验室"
+    },
+    "deepmind": {
+      "name": "Google DeepMind",
+      "icon": "🧠",
+      "color": "#4285F4",
+      "group": "四大实验室"
+    },
+    "anthropic": {
+      "name": "Anthropic",
+      "icon": "🛡️",
+      "color": "#D4A574",
+      "group": "四大实验室"
+    },
+    "xai": {
+      "name": "xAI",
+      "icon": "⚡",
+      "color": "#1DA1F2",
+      "group": "四大实验室"
+    },
+    "researchers": {
+      "name": "顶尖研究者",
+      "icon": "🔬",
+      "color": "#E8734A",
+      "group": "独立研究者与开源领袖"
+    },
+    "leaders": {
+      "name": "行业领袖",
+      "icon": "🚀",
+      "color": "#8B5CF6",
+      "group": "新兴公司与行业评论"
+    },
+    "academic": {
+      "name": "学术博主",
+      "icon": "📚",
+      "color": "#059669",
+      "group": "学术信息源"
+    },
+    "llm_research": {
+      "name": "LLM 研究",
+      "icon": "💬",
+      "color": "#DC2626",
+      "group": "学术信息源"
+    },
+    "vision_gen": {
+      "name": "视觉生成",
+      "icon": "🎨",
+      "color": "#7C3AED",
+      "group": "学术信息源"
+    },
+    "robotics": {
+      "name": "具身智能",
+      "icon": "🤖",
+      "color": "#B45309",
+      "group": "学术信息源"
+    },
+    "ai_safety": {
+      "name": "AI 安全",
+      "icon": "🔒",
+      "color": "#0369A1",
+      "group": "学术信息源"
+    }
+  },
+  "influencers": [
+    {"name": "Sam Altman", "handle": "sama", "role": "OpenAI CEO & 联合创始人", "category": "openai", "highlight": true},
+    {"name": "Greg Brockman", "handle": "gdb", "role": "OpenAI 总裁 & 联合创始人", "category": "openai", "highlight": false},
+    {"name": "Mark Chen", "handle": "markchen90", "role": "OpenAI 首席研究官", "category": "openai", "highlight": false},
+    {"name": "Wojciech Zaremba", "handle": "woj_zaremba", "role": "OpenAI 联合创始人", "category": "openai", "highlight": false},
+    {"name": "Jong Wook Kim", "handle": "_jongwook_kim", "role": "OpenAI 技术团队 (CLIP)", "category": "openai", "highlight": false},
+    {"name": "Shunyu Yao", "handle": "ShunyuYao12", "role": "OpenAI 研究员 (ReAct/Agent)", "category": "openai", "highlight": false},
+    {"name": "Noam Brown", "handle": "polynoamial", "role": "OpenAI 研究员 (推理/博弈AI)", "category": "openai", "highlight": false},
+    {"name": "Kevin Weil", "handle": "kevinweil", "role": "OpenAI 首席产品官", "category": "openai", "highlight": false},
+
+    {"name": "Demis Hassabis", "handle": "demishassabis", "role": "DeepMind CEO & 诺贝尔奖得主", "category": "deepmind", "highlight": false},
+    {"name": "Jeff Dean", "handle": "JeffDean", "role": "Google 首席科学家", "category": "deepmind", "highlight": false},
+    {"name": "Oriol Vinyals", "handle": "OriolVinyalsML", "role": "DeepMind 研究副总裁", "category": "deepmind", "highlight": false},
+    {"name": "Koray Kavukcuoglu", "handle": "koraykv", "role": "DeepMind CTO", "category": "deepmind", "highlight": false},
+    {"name": "Petar Veličković", "handle": "PetarV_93", "role": "DeepMind 高级研究科学家 (GNN)", "category": "deepmind", "highlight": false},
+    {"name": "Saining Xie", "handle": "sainingxie", "role": "DeepMind/NYU 研究员 (DiT)", "category": "deepmind", "highlight": false},
+    {"name": "Shakir Mohamed", "handle": "shakir_za", "role": "DeepMind 研究总监", "category": "deepmind", "highlight": false},
+    {"name": "Raia Hadsell", "handle": "RaiaHadsell", "role": "DeepMind 研究副总裁 (机器人/强化学习)", "category": "deepmind", "highlight": false},
+
+    {"name": "Dario Amodei", "handle": "DarioAmodei", "role": "Anthropic CEO & 联合创始人", "category": "anthropic", "highlight": false},
+    {"name": "Jack Clark", "handle": "jackclarkSF", "role": "Anthropic 联合创始人", "category": "anthropic", "highlight": false},
+    {"name": "Chris Olah", "handle": "ch402", "role": "Anthropic 可解释性研究", "category": "anthropic", "highlight": false},
+    {"name": "Jared Kaplan", "handle": "JaredKaplan", "role": "Anthropic 首席科学官", "category": "anthropic", "highlight": false},
+    {"name": "Amanda Askell", "handle": "AmandaAskell", "role": "Anthropic 伦理学家", "category": "anthropic", "highlight": false},
+    {"name": "Zack Witten", "handle": "zswitten", "role": "Anthropic 提示工程师", "category": "anthropic", "highlight": false},
+
+    {"name": "Elon Musk", "handle": "elonmusk", "role": "xAI CEO & 创始人", "category": "xai", "highlight": false},
+    {"name": "Greg Yang", "handle": "TheGregYang", "role": "xAI 联合创始人 (muP)", "category": "xai", "highlight": false},
+    {"name": "Zihang Dai", "handle": "ZihangDai", "role": "xAI 联合创始人 (XLNet)", "category": "xai", "highlight": false},
+    {"name": "Yao Fu", "handle": "Francis_YAO_", "role": "xAI Scaling工程师", "category": "xai", "highlight": false},
+
+    {"name": "Andrej Karpathy", "handle": "karpathy", "role": "Eureka Labs 创始人", "category": "researchers", "highlight": true},
+    {"name": "Jim Fan", "handle": "DrJimFan", "role": "NVIDIA 高级研究科学家", "category": "researchers", "highlight": true},
+    {"name": "Yann LeCun", "handle": "ylecun", "role": "Meta 首席AI科学家 (图灵奖)", "category": "researchers", "highlight": true},
+    {"name": "François Chollet", "handle": "fchollet", "role": "Keras 创始人 (ARC-AGI)", "category": "researchers", "highlight": false},
+    {"name": "Soumith Chintala", "handle": "soumithchintala", "role": "PyTorch 联合创始人", "category": "researchers", "highlight": false},
+    {"name": "Fei-Fei Li", "handle": "drfeifei", "role": "Stanford 教授 & World Labs CEO (空间智能)", "category": "researchers", "highlight": true},
+    {"name": "Andrew Ng", "handle": "AndrewYNg", "role": "DeepLearning.AI 创始人 (图灵奖)", "category": "researchers", "highlight": true},
+    {"name": "Jeremy Howard", "handle": "jeremyphoward", "role": "fast.ai & Answer.AI 联合创始人", "category": "researchers", "highlight": false},
+    {"name": "David Ha", "handle": "hardmaru", "role": "Sakana AI 联合创始人", "category": "researchers", "highlight": false},
+    {"name": "Jeff Clune", "handle": "JeffClune", "role": "UBC 教授 & Vector Institute 研究员", "category": "researchers", "highlight": false},
+
+    {"name": "Arthur Mensch", "handle": "arthurmensch", "role": "Mistral AI CEO", "category": "leaders", "highlight": true},
+    {"name": "Aidan Gomez", "handle": "aidangomez", "role": "Cohere CEO (Transformer作者)", "category": "leaders", "highlight": false},
+    {"name": "Noam Shazeer", "handle": "NoamShazeer", "role": "Google AI (Transformer作者)", "category": "leaders", "highlight": false},
+    {"name": "Ilya Sutskever", "handle": "ilyasut", "role": "SSI 创始人", "category": "leaders", "highlight": false},
+    {"name": "Nat Friedman", "handle": "natfriedman", "role": "AI 投资人 (前GitHub CEO)", "category": "leaders", "highlight": false},
+    {"name": "Clem Delangue", "handle": "ClemDelangue", "role": "Hugging Face CEO", "category": "leaders", "highlight": false},
+    {"name": "Aravind Srinivas", "handle": "AravSrinivas", "role": "Perplexity CEO & 联合创始人", "category": "leaders", "highlight": false},
+    {"name": "Mustafa Suleyman", "handle": "mustafasuleyman", "role": "Microsoft AI CEO", "category": "leaders", "highlight": false},
+    {"name": "Alexandr Wang", "handle": "alexandr_wang", "role": "Meta 首席AI官 & Scale AI 创始人", "category": "leaders", "highlight": false},
+
+    {"name": "AK", "handle": "_akhaliq", "role": "Hugging Face 每日论文策展人", "category": "academic", "highlight": true},
+    {"name": "Papers with Code", "handle": "paperswithcode", "role": "论文+代码平台", "category": "academic", "highlight": false},
+    {"name": "Yannic Kilcher", "handle": "ykilcher", "role": "AI 论文深度解读 YouTuber", "category": "academic", "highlight": false},
+    {"name": "Arxiv Sanity", "handle": "arxiv_sanity", "role": "arXiv热门论文推送", "category": "academic", "highlight": false},
+    {"name": "Elvis Saravia", "handle": "omarsar0", "role": "每周AI论文精选 Newsletter", "category": "academic", "highlight": true},
+    {"name": "Rohan Paul", "handle": "rohanpaul_ai", "role": "AI论文每日解读 (135K关注)", "category": "academic", "highlight": false},
+
+    {"name": "Sebastian Raschka", "handle": "rasbt", "role": "LLM 实践专家 & 作者", "category": "llm_research", "highlight": true},
+    {"name": "Nathan Lambert", "handle": "natolambert", "role": "Allen AI 研究员 (RLHF/开源LLM)", "category": "llm_research", "highlight": true},
+    {"name": "Maxime Labonne", "handle": "maximelabonne", "role": "LLM 微调与量化专家", "category": "llm_research", "highlight": false},
+    {"name": "Chip Huyen", "handle": "chipro", "role": "ML系统工程师 & 作者", "category": "llm_research", "highlight": false},
+    {"name": "Tri Dao", "handle": "tri_dao", "role": "FlashAttention & Mamba 作者", "category": "llm_research", "highlight": true},
+    {"name": "Albert Gu", "handle": "_albertgu", "role": "Mamba/SSM 作者 (CMU/Cartesia)", "category": "llm_research", "highlight": true},
+    {"name": "Sasha Rush", "handle": "srush_nlp", "role": "Cornell 教授 & Hugging Face (NLP)", "category": "llm_research", "highlight": false},
+    {"name": "Denny Zhou", "handle": "denny_zhou", "role": "Google DeepMind 推理团队负责人 (CoT)", "category": "llm_research", "highlight": true},
+    {"name": "Hyung Won Chung", "handle": "hwchung27", "role": "OpenAI 研究员 (指令微调/Scaling)", "category": "llm_research", "highlight": false},
+    {"name": "Lilian Weng", "handle": "lilianweng", "role": "Thinking Machines Lab 联合创始人 (前OpenAI)", "category": "llm_research", "highlight": true},
+    {"name": "Sayak Paul", "handle": "RisingSayak", "role": "Hugging Face 研究员 (扩散模型)", "category": "llm_research", "highlight": false},
+    {"name": "Yuchen Jin", "handle": "Yuchenj_UW", "role": "Hyperbolic Labs CTO (AI基础设施)", "category": "llm_research", "highlight": false},
+    {"name": "Jason Wei", "handle": "jasonwei20", "role": "大模型推理研究员 (CoT)", "category": "llm_research", "highlight": false},
+    {"name": "Ofir Press", "handle": "OfirPress", "role": "大语言模型研究员", "category": "llm_research", "highlight": false},
+    {"name": "Hamel Husain", "handle": "HamelHusain", "role": "LLM 工程与评测实践者", "category": "llm_research", "highlight": false},
+
+    {"name": "Robin Rombach", "handle": "robrombach", "role": "Black Forest Labs 创始人 (Stable Diffusion/FLUX)", "category": "vision_gen", "highlight": true},
+    {"name": "Patrick Esser", "handle": "pess_r", "role": "Black Forest Labs 研究员 (LDM/FLUX)", "category": "vision_gen", "highlight": false},
+    {"name": "Aditya Ramesh", "handle": "model_mechanic", "role": "OpenAI VP Robotics (DALL-E)", "category": "vision_gen", "highlight": false},
+    {"name": "Kaiming He", "handle": "KaimingHe", "role": "MIT 教授 & DeepMind (ResNet/MAE)", "category": "vision_gen", "highlight": true},
+    {"name": "Phillip Isola", "handle": "phillip_isola", "role": "MIT 教授 (pix2pix/视觉生成)", "category": "vision_gen", "highlight": false},
+    {"name": "Lucas Beyer", "handle": "giffmana", "role": "Google DeepMind 研究员 (ViT/多模态)", "category": "vision_gen", "highlight": false},
+
+    {"name": "Chelsea Finn", "handle": "chelseabfinn", "role": "Stanford 教授 & Physical Intelligence 联合创始人", "category": "robotics", "highlight": true},
+    {"name": "Sergey Levine", "handle": "svlevine", "role": "UC Berkeley 教授 & Physical Intelligence 联合创始人", "category": "robotics", "highlight": true},
+    {"name": "Pieter Abbeel", "handle": "pabbeel", "role": "UC Berkeley 教授 & Covariant CEO", "category": "robotics", "highlight": false},
+    {"name": "Deepak Pathak", "handle": "pathak2206", "role": "CMU 教授 & Skild AI CEO (好奇心驱动RL)", "category": "robotics", "highlight": false},
+    {"name": "Lerrel Pinto", "handle": "LerrelPinto", "role": "NYU 教授 (家用机器人)", "category": "robotics", "highlight": false},
+    {"name": "Karol Hausman", "handle": "hausman_k", "role": "Physical Intelligence 联合创始人 (具身AI)", "category": "robotics", "highlight": false},
+    {"name": "Russ Tedrake", "handle": "RussTedrake", "role": "MIT 教授 (机器人控制与规划)", "category": "robotics", "highlight": false},
+
+    {"name": "Jan Leike", "handle": "janleike", "role": "Anthropic 对齐团队负责人 (前OpenAI超级对齐)", "category": "ai_safety", "highlight": true},
+    {"name": "Paul Christiano", "handle": "paulfchristiano", "role": "美国AI安全研究所负责人 (RLHF创始人)", "category": "ai_safety", "highlight": true},
+    {"name": "Yoshua Bengio", "handle": "Yoshua_Bengio", "role": "Mila 创始人 & LawZero AI安全组织 (图灵奖)", "category": "ai_safety", "highlight": true},
+    {"name": "Stuart Russell", "handle": "StuartJRussell", "role": "UC Berkeley 教授 (AI圣经作者/AI安全)", "category": "ai_safety", "highlight": false},
+    {"name": "Eliezer Yudkowsky", "handle": "ESYudkowsky", "role": "MIRI 研究员 (AI对齐先驱)", "category": "ai_safety", "highlight": false}
+  ],
+  "academic_categories": [
+    "大语言模型 (LLM & NLP)",
+    "计算机视觉 (CV)",
+    "图像生成与编辑",
+    "视频生成与编辑",
+    "音频与语音",
+    "3D视觉与重建",
+    "数字人与虚拟形象",
+    "多模态学习",
+    "AI Agent 与自主系统",
+    "具身智能与机器人",
+    "AI基础设施与效率",
+    "AI for Science",
+    "AI 安全与对齐"
+  ]
+}

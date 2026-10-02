@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Jakub Pachocki",
+    "handle": "merettm",
+    "role": "OpenAI 首席科学家",
+    "category": "openai",
+    "highlight": true
+  },
+  {
+    "name": "Tom Brown",
+    "handle": "NotTomBrown",
+    "role": "Anthropic 联合创始人兼首席算力官",
+    "category": "anthropic",
+    "highlight": true
+  },
+  {
+    "name": "George Hotz",
+    "handle": "realGeorgeHotz",
+    "role": "tinygrad 创始人（深度学习框架 / 编译）",
+    "category": "researchers",
+    "highlight": true
+  },
+  {
+    "name": "Jie Tang (唐杰)",
+    "handle": "jietang",
+    "role": "清华大学教授 / 智谱创始人（GLM）",
+    "category": "leaders",
+    "highlight": true
+  },
+  {
+    "name": "Jensen Huang (黄仁勋)",
+    "handle": "JensenHuang",
+    "role": "NVIDIA 创始人兼 CEO（GPU / AI Infra）",
+    "category": "leaders",
+    "highlight": true
+  },
+  {
+    "name": "Tianqi Chen",
+    "handle": "tqchenml",
+    "role": "CMU 副教授 / NVIDIA 杰出工程师（TVM / MLC）",
+    "category": "llm_research",
+    "highlight": true
+  },
+  {
+    "name": "Woosuk Kwon",
+    "handle": "woosuk_k",
+    "role": "vLLM 联合负责人 / Inferact CTO",
+    "category": "llm_research",
+    "highlight": true
+  },
+  {
+    "name": "Lianmin Zheng",
+    "handle": "lm_zheng",
+    "role": "Meta 推理团队 / SGLang 核心发起者 / LMSYS 联合创始人",
+    "category": "llm_research",
+    "highlight": true
+  }
+]

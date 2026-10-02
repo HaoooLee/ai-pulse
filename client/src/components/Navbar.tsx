@@ -13,7 +13,7 @@ const LOGO_URL = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663393655905/WLAVe
 
 const navLinks = [
   { href: '/', label: '首页', icon: Zap },
-  { href: '/voices', label: '大V动态' },
+  { href: '/voices', label: '人物信源' },
   { href: '/academic', label: '学术前沿' },
   { href: '/archive', label: '收藏夹', icon: Bookmark },
 ];

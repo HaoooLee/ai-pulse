@@ -119,6 +119,33 @@ export interface TrendingResponse {
   fetched_at: string;
 }
 
+export type NewsInfluencer = Pick<InfluencerData, 'name' | 'handle' | 'role' | 'category' | 'highlight'>;
+
+export interface NewsItem {
+  id: string;
+  title: string;
+  source_name: string;
+  source_url: string;
+  author: string;
+  published_at: string;
+  category: string;
+  summary: string;
+  analysis: string;
+  topics: string[];
+  related_handles: string[];
+}
+
+export interface NewsResponse {
+  meta: { fetched_at: string; model: string; total_items: number; total_influencers: number };
+  categories: Record<string, CategoryData>;
+  influencers: NewsInfluencer[];
+  items: NewsItem[];
+}
+
+export function useNews() {
+  return useJsonData<NewsResponse>('/data/news.json');
+}
+
 export function useTweets() {
   return useJsonData<TweetsResponse>('/data/tweets.json');
 }

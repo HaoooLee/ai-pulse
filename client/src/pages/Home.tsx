@@ -5,10 +5,11 @@
  */
 import { useAuth } from '@/_core/hooks/useAuth';
 import { Link } from 'wouter';
-import { useTweets, useTrending, useAcademic } from '@/hooks/useData';
+import { useTweets, useTrending, useAcademic, useNews } from '@/hooks/useData';
 import { formatFullDate } from '@/lib/utils';
 import TweetCard from '@/components/TweetCard';
 import AcademicCard from '@/components/AcademicCard';
+import PublicNewsCard from '@/components/PublicNewsCard';
 import { ArrowRight, Zap, BookOpen, TrendingUp, Clock, Sparkles, ChevronRight } from 'lucide-react';
 
 const HERO_BG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663393655905/WLAVeVPYGCycWsT7vD3Ng4/hero-bg-8Mq7TgD88UihVYytSHUPh6.webp';
@@ -21,6 +22,7 @@ export default function Home() {
   const { data: tweets, loading: tweetsLoading } = useTweets();
   const { data: trending, loading: trendingLoading } = useTrending();
   const { data: academic, loading: academicLoading } = useAcademic();
+  const { data: news, loading: newsLoading, error: newsError } = useNews();
 
   // Get highlight influencers' latest tweets
   const highlightTweets = tweets
@@ -62,13 +64,13 @@ export default function Home() {
             </h1>
 
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mb-6">
-              聚合40+位AI领域顶尖人物的推特动态，通过Grok AI深度解读，每12小时自动更新，为你呈现高信噪比的AI资讯。
+              汇集大模型与 AI 基础设施的公开资讯，通过 Grok 生成中文摘要与分析，关注研究方向、模型能力和算力投入。
             </p>
 
             <div className="flex items-center gap-4 flex-wrap">
               <Link href="/voices" className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-orange text-white rounded-md text-sm font-medium hover:bg-brand-orange-dark transition-colors shadow-warm">
                 <Zap className="w-4 h-4" />
-                大V动态
+                人物信源
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link href="/academic" className="inline-flex items-center gap-2 px-5 py-2.5 bg-card border border-border/60 text-foreground rounded-md text-sm font-medium hover:border-brand-orange/40 hover:text-brand-orange transition-colors">
@@ -78,15 +80,15 @@ export default function Home() {
             </div>
 
             {/* Update status */}
-            {tweets?.meta && (
+            {news?.meta && (
               <div className="mt-6 flex items-center gap-4 text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
                 <span className="flex items-center gap-1.5">
                   <Clock className="w-3 h-3" />
-                  上次更新: {formatFullDate(tweets.meta.fetched_at)}
+                  上次更新: {formatFullDate(news.meta.fetched_at)}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                  追踪 {tweets.meta.total_influencers} 位影响者
+                  关注 {news.meta.total_influencers} 位人物信源
                 </span>
               </div>
             )}
@@ -94,8 +96,18 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="container py-8">
+        <h2 className="text-xl md:text-2xl font-bold mb-2" style={{ fontFamily: 'var(--font-display)' }}>大模型与 AI Infra 资讯</h2>
+        <p className="text-sm text-muted-foreground mb-6">官方公开来源 · 中文摘要与分析</p>
+        {newsLoading ? <p className="text-sm text-muted-foreground">正在加载资讯...</p> : newsError ? (
+          <p role="alert" className="text-sm text-muted-foreground">资讯暂时无法加载，请稍后重试。</p>
+        ) : news && news.items.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2">{news.items.map(item => <PublicNewsCard key={item.id} item={item} people={news.influencers} />)}</div>
+        ) : <p className="text-sm text-muted-foreground">暂无已发布资讯。</p>}
+      </section>
+
       {/* Trending Section */}
-      {!trendingLoading && trending && (
+      {!trendingLoading && trending && trending.key_developments.length > 0 && (
         <section className="container py-10">
           <div className="bg-card rounded-xl border border-border/50 shadow-warm overflow-hidden">
             <div className="p-6 md:p-8">
@@ -145,7 +157,7 @@ export default function Home() {
       )}
 
       {/* Featured Voices */}
-      <section className="container py-8">
+      {(tweetsLoading || highlightTweets.length > 0) && <section className="container py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -191,10 +203,10 @@ export default function Home() {
             ))}
           </div>
         )}
-      </section>
+      </section>}
 
       {/* Academic Highlights */}
-      <section className="container py-8 pb-16">
+      {(academicLoading || latestProjects.length > 0) && <section className="container py-8 pb-16">
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -231,7 +243,7 @@ export default function Home() {
             ))}
           </div>
         )}
-      </section>
+      </section>}
     </div>
   );
 }

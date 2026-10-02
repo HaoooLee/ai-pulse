@@ -12,7 +12,7 @@ import { sdk } from "./sdk";
 const PRESET_USERS: Array<{ username: string; hash: string; displayName: string }> = [
   {
     username: "admin",
-    hash: "$2b$10$QgSkU.lC4Zi/ifb0D6tiTOe/aLHMevl1uUCqSNNv56EnWGDWYFUQW",
+    hash: process.env.ADMIN_PASSWORD_HASH || "$2b$10$QgSkU.lC4Zi/ifb0D6tiTOe/aLHMevl1uUCqSNNv56EnWGDWYFUQW",
     displayName: "Admin",
   },
   {
@@ -71,7 +71,7 @@ export function registerOAuthRoutes(app: Express) {
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     const { username, password } = req.body as { username?: string; password?: string };
 
-    if (!username || !password) {
+    if (typeof username !== "string" || !username.trim() || typeof password !== "string" || !password) {
       res.status(400).json({ error: "Username and password are required" });
       return;
     }
@@ -94,26 +94,34 @@ export function registerOAuthRoutes(app: Express) {
       return;
     }
 
-    // Upsert user in database
-    const openId = `local_${presetUser.username}`;
-    await db.upsertUser({
-      openId,
-      name: presetUser.displayName,
-      email: null,
-      loginMethod: "password",
-      lastSignedIn: new Date(),
-    });
+    try {
+      if (!db.getDb()) {
+        res.status(503).json({ error: "Login service is temporarily unavailable" });
+        return;
+      }
+      // Upsert user in database
+      const openId = `local_${presetUser.username}`;
+      await db.upsertUser({
+        openId,
+        name: presetUser.displayName,
+        email: null,
+        loginMethod: "password",
+        lastSignedIn: new Date(),
+      });
 
-    // Create session JWT
-    const sessionToken = await sdk.createSessionToken(openId, {
-      name: presetUser.displayName,
-      expiresInMs: ONE_YEAR_MS,
-    });
+      // Create session JWT
+      const sessionToken = await sdk.createSessionToken(openId, {
+        name: presetUser.displayName,
+        expiresInMs: ONE_YEAR_MS,
+      });
 
-    const cookieOptions = getSessionCookieOptions(req);
-    res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      const cookieOptions = getSessionCookieOptions(req);
+      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-    res.json({ success: true, user: { username: presetUser.username, name: presetUser.displayName } });
+      res.json({ success: true, user: { username: presetUser.username, name: presetUser.displayName } });
+    } catch {
+      res.status(503).json({ error: "Login service is temporarily unavailable" });
+    }
   });
 
   // Keep backward compatibility - redirect old OAuth routes to login

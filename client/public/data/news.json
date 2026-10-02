@@ -1,0 +1,657 @@
+{
+  "meta": {
+    "fetched_at": "2026-10-02T14:13:08.806123+00:00",
+    "model": "grok-4.6",
+    "total_items": 3,
+    "total_influencers": 75
+  },
+  "categories": {
+    "openai": {
+      "name": "OpenAI",
+      "icon": "🔮",
+      "color": "#10A37F",
+      "group": "四大实验室"
+    },
+    "deepmind": {
+      "name": "Google DeepMind",
+      "icon": "🧠",
+      "color": "#4285F4",
+      "group": "四大实验室"
+    },
+    "anthropic": {
+      "name": "Anthropic",
+      "icon": "🛡️",
+      "color": "#D4A574",
+      "group": "四大实验室"
+    },
+    "xai": {
+      "name": "xAI",
+      "icon": "⚡",
+      "color": "#1DA1F2",
+      "group": "四大实验室"
+    },
+    "researchers": {
+      "name": "顶尖研究者",
+      "icon": "🔬",
+      "color": "#E8734A",
+      "group": "独立研究者与开源领袖"
+    },
+    "leaders": {
+      "name": "行业领袖",
+      "icon": "🚀",
+      "color": "#8B5CF6",
+      "group": "新兴公司与行业评论"
+    },
+    "academic": {
+      "name": "学术博主",
+      "icon": "📚",
+      "color": "#059669",
+      "group": "学术信息源"
+    },
+    "llm_research": {
+      "name": "LLM 研究",
+      "icon": "💬",
+      "color": "#DC2626",
+      "group": "学术信息源"
+    },
+    "vision_gen": {
+      "name": "视觉生成",
+      "icon": "🎨",
+      "color": "#7C3AED",
+      "group": "学术信息源"
+    },
+    "robotics": {
+      "name": "具身智能",
+      "icon": "🤖",
+      "color": "#B45309",
+      "group": "学术信息源"
+    },
+    "ai_safety": {
+      "name": "AI 安全",
+      "icon": "🔒",
+      "color": "#0369A1",
+      "group": "学术信息源"
+    }
+  },
+  "influencers": [
+    {
+      "name": "Sam Altman",
+      "handle": "sama",
+      "role": "OpenAI CEO & 联合创始人",
+      "category": "openai",
+      "highlight": true
+    },
+    {
+      "name": "Greg Brockman",
+      "handle": "gdb",
+      "role": "OpenAI 总裁 & 联合创始人",
+      "category": "openai",
+      "highlight": false
+    },
+    {
+      "name": "Mark Chen",
+      "handle": "markchen90",
+      "role": "OpenAI 首席研究官",
+      "category": "openai",
+      "highlight": false
+    },
+    {
+      "name": "Wojciech Zaremba",
+      "handle": "woj_zaremba",
+      "role": "OpenAI 联合创始人",
+      "category": "openai",
+      "highlight": false
+    },
+    {
+      "name": "Jong Wook Kim",
+      "handle": "_jongwook_kim",
+      "role": "OpenAI 技术团队 (CLIP)",
+      "category": "openai",
+      "highlight": false
+    },
+    {
+      "name": "Shunyu Yao",
+      "handle": "ShunyuYao12",
+      "role": "腾讯首席 AI 科学家（大模型 / AI Infra）",
+      "category": "leaders",
+      "highlight": false
+    },
+    {
+      "name": "Demis Hassabis",
+      "handle": "demishassabis",
+      "role": "Google DeepMind 主席 / Alphabet 首席科学家（诺贝尔奖）",
+      "category": "deepmind",
+      "highlight": false
+    },
+    {
+      "name": "Jeff Dean",
+      "handle": "JeffDean",
+      "role": "Discovery Loop 联合创始人兼 CEO（前 Google 首席科学家）",
+      "category": "leaders",
+      "highlight": false
+    },
+    {
+      "name": "Oriol Vinyals",
+      "handle": "OriolVinyalsML",
+      "role": "Discovery Loop 联合创始人兼 CTO（前 Google DeepMind 研究副总裁）",
+      "category": "leaders",
+      "highlight": false
+    },
+    {
+      "name": "Koray Kavukcuoglu",
+      "handle": "koraykv",
+      "role": "Google DeepMind 高级副总裁 / Google 首席 AI 架构师",
+      "category": "deepmind",
+      "highlight": false
+    },
+    {
+      "name": "Petar Veličković",
+      "handle": "PetarV_93",
+      "role": "DeepMind 高级研究科学家 (GNN)",
+      "category": "deepmind",
+      "highlight": false
+    },
+    {
+      "name": "Saining Xie",
+      "handle": "sainingxie",
+      "role": "AMI Labs 联合创始人兼首席科学官 / NYU 教授",
+      "category": "researchers",
+      "highlight": false
+    },
+    {
+      "name": "Dario Amodei",
+      "handle": "DarioAmodei",
+      "role": "Anthropic CEO & 联合创始人",
+      "category": "anthropic",
+      "highlight": false
+    },
+    {
+      "name": "Jack Clark",
+      "handle": "jackclarkSF",
+      "role": "Anthropic 联合创始人 / 公共利益负责人",
+      "category": "anthropic",
+      "highlight": false
+    },
+    {
+      "name": "Chris Olah",
+      "handle": "ch402",
+      "role": "Anthropic 联合创始人 / 可解释性研究负责人",
+      "category": "anthropic",
+      "highlight": false
+    },
+    {
+      "name": "Amanda Askell",
+      "handle": "AmandaAskell",
+      "role": "Anthropic 伦理学家",
+      "category": "anthropic",
+      "highlight": false
+    },
+    {
+      "name": "Zack Witten",
+      "handle": "zswitten",
+      "role": "Anthropic 提示工程师",
+      "category": "anthropic",
+      "highlight": false
+    },
+    {
+      "name": "Elon Musk",
+      "handle": "elonmusk",
+      "role": "xAI CEO & 创始人",
+      "category": "xai",
+      "highlight": false
+    },
+    {
+      "name": "Greg Yang",
+      "handle": "TheGregYang",
+      "role": "xAI 联合创始人 (muP)",
+      "category": "xai",
+      "highlight": false
+    },
+    {
+      "name": "Zihang Dai",
+      "handle": "ZihangDai",
+      "role": "xAI 联合创始人 (XLNet)",
+      "category": "xai",
+      "highlight": false
+    },
+    {
+      "name": "Yao Fu",
+      "handle": "Francis_YAO_",
+      "role": "大模型预训练与 Scaling 研究者（前 xAI / Google DeepMind）",
+      "category": "llm_research",
+      "highlight": false
+    },
+    {
+      "name": "Andrej Karpathy",
+      "handle": "karpathy",
+      "role": "Eureka Labs 创始人",
+      "category": "researchers",
+      "highlight": true
+    },
+    {
+      "name": "Jim Fan",
+      "handle": "DrJimFan",
+      "role": "NVIDIA 机器人总监 / 杰出科学家（GEAR）",
+      "category": "researchers",
+      "highlight": true
+    },
+    {
+      "name": "Yann LeCun",
+      "handle": "ylecun",
+      "role": "AMI Labs 执行主席 / NYU 教授（图灵奖）",
+      "category": "researchers",
+      "highlight": true
+    },
+    {
+      "name": "François Chollet",
+      "handle": "fchollet",
+      "role": "Ndea / ARC Prize 联合创始人，Keras / ARC-AGI 作者",
+      "category": "researchers",
+      "highlight": false
+    },
+    {
+      "name": "Soumith Chintala",
+      "handle": "soumithchintala",
+      "role": "Thinking Machines Lab 技术团队 / PyTorch 联合创始人",
+      "category": "researchers",
+      "highlight": false
+    },
+    {
+      "name": "Fei-Fei Li",
+      "handle": "drfeifei",
+      "role": "Stanford 教授 & World Labs CEO (空间智能)",
+      "category": "researchers",
+      "highlight": true
+    },
+    {
+      "name": "Andrew Ng",
+      "handle": "AndrewYNg",
+      "role": "DeepLearning.AI 创始人 / Stanford 兼职教授",
+      "category": "researchers",
+      "highlight": true
+    },
+    {
+      "name": "Jeremy Howard",
+      "handle": "jeremyphoward",
+      "role": "fast.ai & Answer.AI 联合创始人",
+      "category": "researchers",
+      "highlight": false
+    },
+    {
+      "name": "Arthur Mensch",
+      "handle": "arthurmensch",
+      "role": "Mistral AI CEO",
+      "category": "leaders",
+      "highlight": true
+    },
+    {
+      "name": "Aidan Gomez",
+      "handle": "aidangomez",
+      "role": "Cohere CEO (Transformer作者)",
+      "category": "leaders",
+      "highlight": false
+    },
+    {
+      "name": "Noam Shazeer",
+      "handle": "NoamShazeer",
+      "role": "Google AI (Transformer作者)",
+      "category": "leaders",
+      "highlight": false
+    },
+    {
+      "name": "Ilya Sutskever",
+      "handle": "ilyasut",
+      "role": "SSI 创始人",
+      "category": "leaders",
+      "highlight": false
+    },
+    {
+      "name": "Nat Friedman",
+      "handle": "natfriedman",
+      "role": "AI 投资人 (前GitHub CEO)",
+      "category": "leaders",
+      "highlight": false
+    },
+    {
+      "name": "Clément Delangue",
+      "handle": "ClemDelangue",
+      "role": "Hugging Face 联合创始人兼 CEO",
+      "category": "leaders",
+      "highlight": false
+    },
+    {
+      "name": "AK",
+      "handle": "_akhaliq",
+      "role": "Hugging Face 每日论文策展人",
+      "category": "academic",
+      "highlight": true
+    },
+    {
+      "name": "Papers with Code",
+      "handle": "paperswithcode",
+      "role": "论文+代码平台",
+      "category": "academic",
+      "highlight": false
+    },
+    {
+      "name": "Yannic Kilcher",
+      "handle": "ykilcher",
+      "role": "AI 论文深度解读 YouTuber",
+      "category": "academic",
+      "highlight": false
+    },
+    {
+      "name": "Elvis Saravia",
+      "handle": "omarsar0",
+      "role": "每周AI论文精选 Newsletter",
+      "category": "academic",
+      "highlight": true
+    },
+    {
+      "name": "Rohan Paul",
+      "handle": "rohanpaul_ai",
+      "role": "AI 论文每日解读",
+      "category": "academic",
+      "highlight": false
+    },
+    {
+      "name": "Sebastian Raschka",
+      "handle": "rasbt",
+      "role": "LLM 实践专家 & 作者",
+      "category": "llm_research",
+      "highlight": true
+    },
+    {
+      "name": "Nathan Lambert",
+      "handle": "natolambert",
+      "role": "Trillium Labs 创始人 / 开源大模型研究者（前 Allen AI）",
+      "category": "llm_research",
+      "highlight": true
+    },
+    {
+      "name": "Maxime Labonne",
+      "handle": "maximelabonne",
+      "role": "Liquid AI 后训练负责人（微调 / 量化）",
+      "category": "llm_research",
+      "highlight": false
+    },
+    {
+      "name": "Chip Huyen",
+      "handle": "chipro",
+      "role": "ML系统工程师 & 作者",
+      "category": "llm_research",
+      "highlight": false
+    },
+    {
+      "name": "Tri Dao",
+      "handle": "tri_dao",
+      "role": "Together AI 联合创始人兼首席科学家 / FlashAttention 作者",
+      "category": "llm_research",
+      "highlight": true
+    },
+    {
+      "name": "Albert Gu",
+      "handle": "_albertgu",
+      "role": "Mamba/SSM 作者 (CMU/Cartesia)",
+      "category": "llm_research",
+      "highlight": true
+    },
+    {
+      "name": "Sasha Rush",
+      "handle": "srush_nlp",
+      "role": "Cornell 教授 & Hugging Face (NLP)",
+      "category": "llm_research",
+      "highlight": false
+    },
+    {
+      "name": "Denny Zhou",
+      "handle": "denny_zhou",
+      "role": "Meta 超级智能团队 / 前 Google DeepMind 推理团队负责人（CoT）",
+      "category": "llm_research",
+      "highlight": true
+    },
+    {
+      "name": "Hyung Won Chung",
+      "handle": "hwchung27",
+      "role": "Meta 超级智能实验室研究科学家（前 OpenAI / Google Brain）",
+      "category": "llm_research",
+      "highlight": false
+    },
+    {
+      "name": "Lilian Weng",
+      "handle": "lilianweng",
+      "role": "OpenAI 技术团队 / Lil’Log 作者",
+      "category": "llm_research",
+      "highlight": true
+    },
+    {
+      "name": "Sayak Paul",
+      "handle": "RisingSayak",
+      "role": "Hugging Face 研究员 (扩散模型)",
+      "category": "vision_gen",
+      "highlight": false
+    },
+    {
+      "name": "Yuchen Jin",
+      "handle": "Yuchenj_UW",
+      "role": "Databricks AI 系统与产品（前 Hyperbolic 联合创始人兼 CTO）",
+      "category": "llm_research",
+      "highlight": false
+    },
+    {
+      "name": "Robin Rombach",
+      "handle": "robrombach",
+      "role": "Black Forest Labs 创始人 (Stable Diffusion/FLUX)",
+      "category": "vision_gen",
+      "highlight": true
+    },
+    {
+      "name": "Patrick Esser",
+      "handle": "pess_r",
+      "role": "Black Forest Labs 研究员 (LDM/FLUX)",
+      "category": "vision_gen",
+      "highlight": false
+    },
+    {
+      "name": "Aditya Ramesh",
+      "handle": "model_mechanic",
+      "role": "OpenAI VP Robotics (DALL-E)",
+      "category": "vision_gen",
+      "highlight": false
+    },
+    {
+      "name": "Phillip Isola",
+      "handle": "phillip_isola",
+      "role": "MIT 教授 (pix2pix/视觉生成)",
+      "category": "vision_gen",
+      "highlight": false
+    },
+    {
+      "name": "Lucas Beyer",
+      "handle": "giffmana",
+      "role": "Meta 研究员（前 OpenAI / Google DeepMind）",
+      "category": "llm_research",
+      "highlight": false
+    },
+    {
+      "name": "Chelsea Finn",
+      "handle": "chelseabfinn",
+      "role": "Stanford 教授 & Physical Intelligence 联合创始人",
+      "category": "robotics",
+      "highlight": true
+    },
+    {
+      "name": "Sergey Levine",
+      "handle": "svlevine",
+      "role": "UC Berkeley 教授 & Physical Intelligence 联合创始人",
+      "category": "robotics",
+      "highlight": true
+    },
+    {
+      "name": "Pieter Abbeel",
+      "handle": "pabbeel",
+      "role": "UC Berkeley 教授 / Covariant 联合创始人",
+      "category": "robotics",
+      "highlight": false
+    },
+    {
+      "name": "Deepak Pathak",
+      "handle": "pathak2206",
+      "role": "CMU 副教授 / Skild AI 联合创始人兼 CEO（机器人基础模型）",
+      "category": "robotics",
+      "highlight": false
+    },
+    {
+      "name": "Lerrel Pinto",
+      "handle": "LerrelPinto",
+      "role": "Meta 超级智能实验室机器人联合负责人",
+      "category": "robotics",
+      "highlight": false
+    },
+    {
+      "name": "Karol Hausman",
+      "handle": "hausman_k",
+      "role": "Physical Intelligence 联合创始人 (具身AI)",
+      "category": "robotics",
+      "highlight": false
+    },
+    {
+      "name": "Jan Leike",
+      "handle": "janleike",
+      "role": "Anthropic 对齐团队负责人 (前OpenAI超级对齐)",
+      "category": "ai_safety",
+      "highlight": true
+    },
+    {
+      "name": "Paul Christiano",
+      "handle": "paulfchristiano",
+      "role": "ARC 创始人 / OpenAI Foundation 董事（对齐 / RLHF）",
+      "category": "ai_safety",
+      "highlight": true
+    },
+    {
+      "name": "Yoshua Bengio",
+      "handle": "Yoshua_Bengio",
+      "role": "Mila 创始人 & LawZero AI安全组织 (图灵奖)",
+      "category": "ai_safety",
+      "highlight": true
+    },
+    {
+      "name": "Eliezer Yudkowsky",
+      "handle": "ESYudkowsky",
+      "role": "MIRI 研究员 (AI对齐先驱)",
+      "category": "ai_safety",
+      "highlight": false
+    },
+    {
+      "name": "Jakub Pachocki",
+      "handle": "merettm",
+      "role": "OpenAI 首席科学家",
+      "category": "openai",
+      "highlight": true
+    },
+    {
+      "name": "Tom Brown",
+      "handle": "NotTomBrown",
+      "role": "Anthropic 联合创始人兼首席算力官",
+      "category": "anthropic",
+      "highlight": true
+    },
+    {
+      "name": "George Hotz",
+      "handle": "realGeorgeHotz",
+      "role": "tinygrad 创始人（深度学习框架 / 编译）",
+      "category": "researchers",
+      "highlight": true
+    },
+    {
+      "name": "Jie Tang (唐杰)",
+      "handle": "jietang",
+      "role": "清华大学教授 / 智谱创始人（GLM）",
+      "category": "leaders",
+      "highlight": true
+    },
+    {
+      "name": "Jensen Huang (黄仁勋)",
+      "handle": "JensenHuang",
+      "role": "NVIDIA 创始人兼 CEO（GPU / AI Infra）",
+      "category": "leaders",
+      "highlight": true
+    },
+    {
+      "name": "Tianqi Chen",
+      "handle": "tqchenml",
+      "role": "CMU 副教授 / NVIDIA 杰出工程师（TVM / MLC）",
+      "category": "llm_research",
+      "highlight": true
+    },
+    {
+      "name": "Woosuk Kwon",
+      "handle": "woosuk_k",
+      "role": "vLLM 联合负责人 / Inferact CTO",
+      "category": "llm_research",
+      "highlight": true
+    },
+    {
+      "name": "Lianmin Zheng",
+      "handle": "lm_zheng",
+      "role": "Meta 推理团队 / SGLang 核心发起者 / LMSYS 联合创始人",
+      "category": "llm_research",
+      "highlight": true
+    }
+  ],
+  "items": [
+    {
+      "id": "3671e47cd57b3584",
+      "title": "The eternal complement",
+      "source_name": "OpenAI News",
+      "source_url": "https://openai.com/index/the-eternal-complement",
+      "author": "",
+      "published_at": "Thu, 01 Oct 2026 17:00:00 GMT",
+      "category": "official_blog",
+      "summary": "OpenAI发文称先进人工智能可能对突破性想法背后的日常工作最为重要，并探讨执行为何可能塑造下一经济与进步速度。",
+      "analysis": "该官方博客将先进人工智能与突破性想法背后的常规工作联系起来，并提出执行可能影响下一经济与进步节奏。文本以观点阐述为主，未给出具体产品、数据或实施细节。可确认的影响主要是强调执行环节与先进人工智能的互补关系。",
+      "topics": [
+        "先进人工智能",
+        "执行",
+        "经济",
+        "进步速度"
+      ],
+      "related_handles": []
+    },
+    {
+      "id": "a3a4fec4c307b655",
+      "title": "Gemini 4 Argon: our next era of frontier intelligence",
+      "source_name": "Google DeepMind",
+      "source_url": "https://deepmind.google/blog/gemini-4-argon-our-next-era-of-frontier-intelligence/",
+      "author": "",
+      "published_at": "Wed, 30 Sep 2026 20:01:45 +0000",
+      "category": "official_blog",
+      "summary": "Google DeepMind发文宣布Gemini 4 Argon，称其标志着前沿智能的下一个时代。",
+      "analysis": "该官方博客仅以标题式表述宣告Gemini 4 Argon代表前沿智能新阶段。输入未提供能力、性能、发布时间或使用方式等细节。因此当前可确认的影响仅限于官方对下一代前沿智能方向的公开表态。",
+      "topics": [
+        "Gemini 4 Argon",
+        "前沿智能",
+        "Google DeepMind"
+      ],
+      "related_handles": []
+    },
+    {
+      "id": "f4938efeeb28d4c3",
+      "title": "Watch the winning trailer from the Future Vision XPRIZE, The Gifted.",
+      "source_name": "Google AI",
+      "source_url": "https://blog.google/innovation-and-ai/technology/ai/winner-future-vision-xprize/",
+      "author": "",
+      "published_at": "Mon, 28 Sep 2026 19:00:00 +0000",
+      "category": "official_blog",
+      "summary": "Google AI邀请观看Future Vision XPRIZE获胜预告片《The Gifted》。",
+      "analysis": "该官方博客重复同一宣传语句，引导读者观看名为The Gifted的获胜预告片。输入未说明预告片内容、竞赛规则或评选细节。其直接影响主要是导向相关页面进行视频观看。",
+      "topics": [
+        "Future Vision XPRIZE",
+        "The Gifted",
+        "预告片"
+      ],
+      "related_handles": []
+    }
+  ]
+}

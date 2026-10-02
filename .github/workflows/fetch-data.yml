@@ -9,9 +9,15 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: news-update
+  cancel-in-progress: false
+
 jobs:
   fetch-data:
     runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.publish.outputs.commit }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,22 +30,29 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Fetch data from Grok API
+      - name: Verify news pipeline
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+
+      - name: Collect RSS and analyze with Grok
         env:
-          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
-        run: python scripts/fetch_data.py
+          PACKY_API_BASE: ${{ secrets.PACKY_API_BASE }}
+          PACKY_API_KEY: ${{ secrets.PACKY_API_KEY }}
+          PACKY_MODEL: ${{ secrets.PACKY_MODEL }}
+        run: python3 scripts/update_news.py
 
       - name: Commit and push data (with retry)
+        id: publish
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add client/public/data/
+          git add client/public/data/news.json
           git diff --staged --quiet || git commit -m "chore: update AI Pulse data [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
           
           # Retry push up to 5 times with exponential backoff to handle GitHub server errors
           for i in 1 2 3 4 5; do
             git pull --rebase origin main
             if git push; then
+              echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
               echo "Push succeeded on attempt $i"
               exit 0
             fi
@@ -48,3 +61,10 @@ jobs:
           done
           echo "All push attempts failed"
           exit 1
+
+  deploy:
+    needs: fetch-data
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: ${{ needs.fetch-data.outputs.commit }}
+    secrets: inherit

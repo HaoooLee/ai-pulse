@@ -1,4 +1,4 @@
-// api/server.ts
+// server/vercel.ts
 import "dotenv/config";
 import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -135,11 +135,12 @@ function isSecureRequest(req) {
   return protoList.some((proto) => proto.trim().toLowerCase() === "https");
 }
 function getSessionCookieOptions(req) {
+  const secure = isSecureRequest(req);
   return {
     httpOnly: true,
     path: "/",
-    sameSite: "none",
-    secure: isSecureRequest(req)
+    sameSite: secure ? "none" : "lax",
+    secure
   };
 }
 
@@ -160,7 +161,7 @@ import { SignJWT, jwtVerify } from "jose";
 // server/_core/env.ts
 var ENV = {
   appId: process.env.VITE_APP_ID ?? "",
-  cookieSecret: process.env.JWT_SECRET ?? "ai-pulse-secret-key-change-in-production",
+  cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.NEON_DATABASE_URL || process.env.DATABASE_URL || "",
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
@@ -187,6 +188,7 @@ var SDKServer = class {
   }
   getSessionSecret() {
     const secret = ENV.cookieSecret;
+    if (!secret) throw new Error("JWT_SECRET is required");
     return new TextEncoder().encode(secret);
   }
   /**
@@ -258,7 +260,7 @@ var sdk = new SDKServer();
 var PRESET_USERS = [
   {
     username: "admin",
-    hash: "$2b$10$QgSkU.lC4Zi/ifb0D6tiTOe/aLHMevl1uUCqSNNv56EnWGDWYFUQW",
+    hash: process.env.ADMIN_PASSWORD_HASH || "$2b$10$QgSkU.lC4Zi/ifb0D6tiTOe/aLHMevl1uUCqSNNv56EnWGDWYFUQW",
     displayName: "Admin"
   },
   {
@@ -310,7 +312,7 @@ var PRESET_USERS = [
 function registerOAuthRoutes(app2) {
   app2.post("/api/auth/login", async (req, res) => {
     const { username, password } = req.body;
-    if (!username || !password) {
+    if (typeof username !== "string" || !username.trim() || typeof password !== "string" || !password) {
       res.status(400).json({ error: "Username and password are required" });
       return;
     }
@@ -327,21 +329,29 @@ function registerOAuthRoutes(app2) {
       res.status(401).json({ error: "Invalid username or password" });
       return;
     }
-    const openId = `local_${presetUser.username}`;
-    await upsertUser({
-      openId,
-      name: presetUser.displayName,
-      email: null,
-      loginMethod: "password",
-      lastSignedIn: /* @__PURE__ */ new Date()
-    });
-    const sessionToken = await sdk.createSessionToken(openId, {
-      name: presetUser.displayName,
-      expiresInMs: ONE_YEAR_MS
-    });
-    const cookieOptions = getSessionCookieOptions(req);
-    res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-    res.json({ success: true, user: { username: presetUser.username, name: presetUser.displayName } });
+    try {
+      if (!getDb()) {
+        res.status(503).json({ error: "Login service is temporarily unavailable" });
+        return;
+      }
+      const openId = `local_${presetUser.username}`;
+      await upsertUser({
+        openId,
+        name: presetUser.displayName,
+        email: null,
+        loginMethod: "password",
+        lastSignedIn: /* @__PURE__ */ new Date()
+      });
+      const sessionToken = await sdk.createSessionToken(openId, {
+        name: presetUser.displayName,
+        expiresInMs: ONE_YEAR_MS
+      });
+      const cookieOptions = getSessionCookieOptions(req);
+      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      res.json({ success: true, user: { username: presetUser.username, name: presetUser.displayName } });
+    } catch {
+      res.status(503).json({ error: "Login service is temporarily unavailable" });
+    }
   });
   app2.get("/api/auth/github", (_req, res) => {
     res.redirect(302, "/login");
@@ -553,19 +563,13 @@ async function createContext(opts) {
   };
 }
 
-// api/server.ts
+// server/vercel.ts
 var app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 registerOAuthRoutes(app);
-app.use(
-  "/api/trpc",
-  createExpressMiddleware({
-    router: appRouter,
-    createContext
-  })
-);
-var server_default = app;
+app.use("/api/trpc", createExpressMiddleware({ router: appRouter, createContext }));
+var vercel_default = app;
 export {
-  server_default as default
+  vercel_default as default
 };

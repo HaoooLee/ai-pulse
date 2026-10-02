@@ -92,7 +92,7 @@ export default function Login() {
           </h2>
 
           <p className="text-base text-white/80 leading-relaxed mb-10 max-w-md">
-            聚合40+位AI领域顶尖人物的推特动态，通过Grok AI深度解读，每12小时自动更新。
+            汇集大模型与 AI 基础设施的公开资讯，通过 Grok 生成中文摘要与分析，每日更新。
           </p>
 
           {/* Feature highlights */}
@@ -102,7 +102,7 @@ export default function Login() {
                 <Zap className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="text-sm font-medium text-white">大V动态追踪</p>
+                <p className="text-sm font-medium text-white">人物信源追踪</p>
                 <p className="text-xs text-white/60">覆盖OpenAI、DeepMind、Anthropic等顶尖团队</p>
               </div>
             </div>
@@ -221,7 +221,7 @@ export default function Login() {
           {/* Decorative footer */}
           <div className="mt-16 pt-6 border-t border-border/50">
             <p className="text-xs text-muted-foreground text-center" style={{ fontFamily: 'var(--font-mono)' }}>
-              Powered by Grok AI · 每12小时自动更新
+              Powered by Grok AI · 每日更新
             </p>
           </div>
         </div>

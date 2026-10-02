@@ -28,6 +28,7 @@ class SDKServer {
 
   private getSessionSecret() {
     const secret = ENV.cookieSecret;
+    if (!secret) throw new Error("JWT_SECRET is required");
     return new TextEncoder().encode(secret);
   }
 

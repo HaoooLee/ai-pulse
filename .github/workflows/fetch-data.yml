@@ -27,6 +27,8 @@ jobs:
       - name: Fetch data from Grok API
         env:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          XAI_API_BASE: ${{ vars.XAI_API_BASE || 'https://api.x.ai/v1' }}
+          XAI_MODEL: ${{ vars.XAI_MODEL || 'grok-4.7' }}
         run: python scripts/fetch_data.py
 
       - name: Commit and push data (with retry)

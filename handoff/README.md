@@ -32,7 +32,7 @@ export XAI_MODEL=grok-4.7
 export XAI_API_KEY='填入你的 Key'
 ```
 
-接口地址填写站点地址或以 `/v1` 结尾的基础地址。脚本会分别请求 `/v1/responses` 和 `/v1/chat/completions`。Key 放在当前终端或 Actions Secrets。网页登录单独使用根目录的 [`.env.example`](../.env.example) 配置。
+网页登录使用根目录的 [`.env.example`](../.env.example) 配置。
 
 ## 2. 一行抓取并验收
 
@@ -40,9 +40,9 @@ export XAI_API_KEY='填入你的 Key'
 python scripts/fetch_data.py --handle jietang --limit 1 --output handoff/output/jietang.json
 ```
 
-成功时终端打印 `Wrote 1 recent posts for @jietang`。打开输出的 `recent_posts[0]`，用 `tweet_url` 核对作者和原帖。`posted_at` 是 UTC 时间，`content_summary` 和 `ai_analysis` 是中文摘要和解读。打印 `Wrote 0` 表示本次搜索未核实到帖子。已验证的样例见[验收记录](verification.md)。
+成功时终端打印 `Wrote 1 recent posts for @jietang`。输出的 `recent_posts[0]` 包含原帖链接 `tweet_url`、UTC 时间 `posted_at` 和中文摘要、解读。[实抓核验的唐杰原帖](https://x.com/jietang/status/2118001280048345450)
 
-`--handle` 从 [人物配置](../scripts/influencers.json) 选，`--limit` 可设为 1 至 10。省略预览路径时输出到 `handoff/output/<账号>.json`。抓取或校验失败会报错退出，旧文件保留。遇到 HTTP 401 或 403 时先核对地址、Key 和模型是否属于同一个中转站。
+`--handle` 从 [人物配置](../scripts/influencers.json) 选，`--limit` 可设为 1 至 10。省略预览路径时输出到 `handoff/output/<账号>.json`。
 
 ## 3. 运行原版全量流程
 
@@ -64,4 +64,4 @@ python scripts/fetch_data.py --output handoff/output/full
 python -B -m unittest discover -s handoff/tests
 ```
 
-测试使用模拟响应，覆盖名单、参数、原帖校验、全量输出和失败保留旧数据。
+8 项 Python 测试通过，覆盖 75 人模拟全量、参数和原帖校验。12 项网站测试、类型检查和构建通过。

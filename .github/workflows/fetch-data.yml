@@ -30,22 +30,22 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Verify news pipeline
-        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: Verify native X pipeline
+        run: python -B -m unittest discover -s handoff/tests
 
-      - name: Collect RSS and analyze with Grok
+      - name: Fetch X data with Grok
         env:
-          PACKY_API_BASE: ${{ secrets.PACKY_API_BASE }}
-          PACKY_API_KEY: ${{ secrets.PACKY_API_KEY }}
-          PACKY_MODEL: ${{ secrets.PACKY_MODEL }}
-        run: python3 scripts/update_news.py
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          XAI_API_BASE: ${{ vars.XAI_API_BASE || 'https://api.x.ai/v1' }}
+          XAI_MODEL: ${{ vars.XAI_MODEL || 'grok-4.7' }}
+        run: python scripts/fetch_data.py
 
       - name: Commit and push data (with retry)
         id: publish
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add client/public/data/news.json
+          git add client/public/data/tweets.json client/public/data/trending.json client/public/data/academic.json
           git diff --staged --quiet || git commit -m "chore: update AI Pulse data [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
           
           # Retry push up to 5 times with exponential backoff to handle GitHub server errors

@@ -6,22 +6,32 @@ Outputs JSON data files for the static frontend.
 Runs once daily at 07:00 Beijing time via GitHub Actions.
 """
 
+import argparse
+import hashlib
 import json
 import os
+import re
 import sys
+import tempfile
 import time
-import hashlib
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import requests
 
 # Configuration
 XAI_API_KEY = os.environ.get("XAI_API_KEY", "")
-API_URL = "https://api.x.ai/v1/responses"
-MODEL = "grok-4-1-fast-non-reasoning"
+API_BASE = os.environ.get("XAI_API_BASE", "https://api.x.ai/v1").strip().rstrip("/")
+MODEL = os.environ.get("XAI_MODEL", "grok-4.7").strip()
 OUTPUT_DIR = Path(__file__).parent.parent / "client" / "public" / "data"
-SCRIPT_DIR = Path(__file__).parent
+SCRIPT_DIR = Path(__file__).resolve().parent
+PREVIEW_DIR = SCRIPT_DIR.parent / "handoff" / "output"
+POST_URL = re.compile(
+    r"https://(?:www\.)?(?:x|twitter)\.com/([A-Za-z0-9_]{1,15}|i/web)"
+    r"/status/([1-9][0-9]{14,18})(?:[?#].*)?"
+)
+X_EPOCH_MS = 1288834974657
 
 # Load influencers config
 with open(SCRIPT_DIR / "influencers.json", "r", encoding="utf-8") as f:
@@ -31,94 +41,96 @@ INFLUENCERS = CONFIG["influencers"]
 CATEGORIES = CONFIG["categories"]
 
 
-def call_grok(prompt: str, x_handles: list[str] | None = None, max_retries: int = 3) -> str:
-    """Call Grok Responses API with X Search tool."""
-    headers = {
-        "Authorization": f"Bearer {XAI_API_KEY}",
-        "Content-Type": "application/json",
-    }
+def grok_base_url(base: str) -> str:
+    parsed = urlsplit(base)
+    path = parsed.path.rstrip("/") or "/v1"
+    if (
+        parsed.scheme != "https" or not parsed.hostname or parsed.username is not None
+        or parsed.query or parsed.fragment or not path.endswith("/v1")
+    ):
+        raise ValueError("XAI_API_BASE must be an HTTPS origin or a base URL ending in /v1")
+    return parsed._replace(path=path).geturl()
 
-    tools = []
+
+def request_grok(endpoint: str, payload: dict, timeout: int) -> dict:
+    url = f"{grok_base_url(API_BASE)}/{endpoint}"
+    headers = {"Authorization": f"Bearer {XAI_API_KEY}"}
+    for attempt in range(3):
+        try:
+            response = requests.post(
+                url, headers=headers, json=payload,
+                timeout=timeout, allow_redirects=False,
+            )
+        except (requests.Timeout, requests.ConnectionError):
+            error = "Grok request timed out or could not connect"
+        else:
+            status = response.status_code
+            if status == 200:
+                try:
+                    data = response.json()
+                except ValueError as exc:
+                    raise ValueError("Grok returned invalid JSON") from exc
+                if not isinstance(data, dict) or data.get("error"):
+                    raise ValueError("Grok returned an error or an invalid response")
+                return data
+            error = f"Grok {endpoint} returned HTTP {status}"
+            if status not in {429, 500, 502, 503, 504}:
+                raise RuntimeError(error)
+        if attempt == 2:
+            raise RuntimeError(error)
+        time.sleep(5 * (attempt + 1))
+
+
+def call_grok(prompt: str, x_handles: list[str] | None = None) -> tuple[str, set[str]]:
+    """Return Grok's answer and the X post IDs cited by the search response."""
+    tool = {"type": "x_search"}
     if x_handles:
-        tools = [{
-            "type": "x_search",
-            "x_search": {
-                "allowed_x_handles": x_handles[:10]  # max 10 handles
-            }
-        }]
-    else:
-        tools = [{"type": "x_search"}]
-
-    payload = {
+        tool["allowed_x_handles"] = x_handles
+    data = request_grok("responses", {
         "model": MODEL,
-        "input": [
-            {
-                "role": "system",
-                "content": "你是一个AI领域资讯分析师。你需要搜索并分析AI领域关键人物的最新推文动态，提供深度解读。请始终用中文回复。"
-            },
-            {"role": "user", "content": prompt}
-        ],
-        "tools": tools,
-        "temperature": 0.3,
-    }
-
-    for attempt in range(max_retries):
-        try:
-            resp = requests.post(API_URL, headers=headers, json=payload, timeout=180)
-            resp.raise_for_status()
-            data = resp.json()
-
-            # Extract text from Responses API output
-            for item in data.get("output", []):
-                if item.get("type") == "message":
-                    for c in item.get("content", []):
-                        if c.get("type") == "output_text":
-                            return c["text"]
-            return ""
-        except Exception as e:
-            print(f"  Attempt {attempt + 1} failed: {e}")
-            if attempt < max_retries - 1:
-                time.sleep(5 * (attempt + 1))
-            else:
-                return ""
+        "input": prompt,
+        "tools": [tool],
+        "tool_choice": "required",
+        "store": False,
+    }, timeout=180)
+    output = data.get("output", [])
+    if data.get("status", "completed") != "completed" or not any(
+        item.get("type") == "x_search_call"
+        or (item.get("type") == "custom_tool_call" and (item.get("name") or "").startswith("x_"))
+        for item in output
+    ):
+        raise ValueError("Grok did not complete X Search")
+    messages = [
+        part for item in output if item.get("type") == "message"
+        for part in item.get("content", []) if part.get("type") == "output_text"
+    ]
+    text = "".join(part.get("text", "") for part in messages).strip()
+    if not text:
+        raise ValueError("Grok X Search returned no text")
+    citations = set()
+    for part in messages:
+        for source in part.get("annotations") or []:
+            match = POST_URL.fullmatch(source.get("url") or "")
+            if source.get("type") == "url_citation" and match:
+                citations.add(match[2])
+    return text, citations
 
 
-def call_grok_basic(prompt: str, max_retries: int = 3) -> str:
-    """Call Grok Chat Completions API (no search, cheaper)."""
-    headers = {
-        "Authorization": f"Bearer {XAI_API_KEY}",
-        "Content-Type": "application/json",
-    }
-
-    payload = {
-        "model": "grok-3-mini",
+def call_grok_basic(prompt: str) -> str:
+    """Format an X Search answer without making another search."""
+    data = request_grok("chat/completions", {
+        "model": MODEL,
         "messages": [
-            {
-                "role": "system",
-                "content": "你是一个AI领域资讯分析师。请始终用中文回复。直接返回JSON格式，不要加markdown代码块标记。"
-            },
-            {"role": "user", "content": prompt}
+            {"role": "system", "content": "只按输入整理 JSON，保留已给出的链接，不补充内容。"},
+            {"role": "user", "content": prompt},
         ],
-        "temperature": 0.3,
-    }
-
-    for attempt in range(max_retries):
-        try:
-            resp = requests.post("https://api.x.ai/v1/chat/completions", headers=headers, json=payload, timeout=120)
-            resp.raise_for_status()
-            data = resp.json()
-            return data["choices"][0]["message"]["content"]
-        except Exception as e:
-            print(f"  Basic call attempt {attempt + 1} failed: {e}")
-            if attempt < max_retries - 1:
-                time.sleep(5 * (attempt + 1))
-            else:
-                return ""
+    }, timeout=120)
+    return data["choices"][0]["message"]["content"]
 
 
 def parse_json_response(text: str) -> dict | list | None:
     """Try to parse JSON from a response that may contain markdown code blocks."""
-    if not text:
+    if not isinstance(text, str) or not text:
         return None
     try:
         json_str = text
@@ -153,162 +165,99 @@ def make_tweet_id(handle: str, content: str, index: int) -> str:
     return hashlib.md5(f"{handle}_{content}_{index}".encode()).hexdigest()[:12]
 
 
-def fetch_batch_tweets(batch: list[dict]) -> dict:
-    """Fetch tweets for a batch of influencers in one API call.
-    
-    Returns for each person:
-      - recent_posts: 最近6篇帖子
-      - top_posts: 半年内最重要最火的3篇帖子（由Grok判断）
-      - person_summary: 近期动态概述
-    """
+def normalize_posts(posts: list, handle: str, citations: set[str], limit: int, top: bool = False) -> list[dict]:
+    if not limit:
+        return []
+    if not isinstance(posts, list):
+        raise ValueError(f"Grok did not return a post list for @{handle}")
+    verified = {}
+    for post in posts:
+        if not isinstance(post, dict):
+            raise ValueError(f"Grok returned an invalid post for @{handle}")
+        url = post.get("tweet_url")
+        match = POST_URL.fullmatch(url) if isinstance(url, str) else None
+        if not match or match[1].casefold() != handle.casefold() or match[2] not in citations:
+            raise ValueError(f"Grok returned a post without a matching account and citation for @{handle}")
+        if not all(isinstance(post.get(field), str) and post[field].strip() for field in ("content_summary", "ai_analysis", "engagement")):
+            raise ValueError(f"Grok returned an incomplete post for @{handle}")
+        topics = post.get("topics")
+        if not isinstance(topics, list) or not all(isinstance(topic, str) for topic in topics):
+            raise ValueError(f"Grok returned invalid topics for @{handle}")
+        post_id = match[2]
+        published = datetime.fromtimestamp(((int(post_id) >> 22) + X_EPOCH_MS) / 1000, timezone.utc)
+        verified[post_id] = {
+            **post,
+            "tweet_url": f"https://x.com/{handle}/status/{post_id}",
+            "posted_at": published.isoformat(),
+        }
+    ids = list(verified) if top else sorted(verified, key=int, reverse=True)
+    result = []
+    for index, post_id in enumerate(ids[:limit]):
+        post = verified[post_id]
+        summary = post["content_summary"] + ("_top" if top else "")
+        result.append({**post, "id": make_tweet_id(handle, summary, index)})
+    return result
+
+
+def fetch_batch_tweets(batch: list[dict], limit: int = 6, top_limit: int = 3) -> dict:
+    """Fetch verified recent and top X posts in the original website format."""
     handles = [inf["handle"] for inf in batch]
-    names_info = ", ".join([f"@{inf['handle']} ({inf['name']}, {inf['role']})" for inf in batch])
-
-    print(f"  Fetching batch: {', '.join(handles)}...")
-
-    prompt = f"""请搜索以下AI领域关键人物在X/Twitter上的推文动态：
-{names_info}
-
-对每个人，请分别获取两类内容：
-1. **最近6篇帖子**（recent_posts）：按时间倒序，最新的6条推文
-2. **半年内最重要最火的3篇帖子**（top_posts）：过去6个月内，综合考虑转发量、点赞数、引用数、话题影响力，选出最具代表性、传播最广的3篇推文
-
-请按以下JSON格式返回结果（直接返回JSON，不要加markdown代码块标记）：
+    names_info = ", ".join(f"@{inf['handle']} ({inf['name']}, {inf['role']})" for inf in batch)
+    print(f"  Fetching: {', '.join(handles)}")
+    prompt = f"""使用 X Search 搜索这些账号本人发布的帖子：{names_info}。
+每个账号最多返回最近 {limit} 条 recent_posts（按时间降序），以及过去六个月内最多 {top_limit} 条最重要的 top_posts（按影响力排序）。
+从来源核实发帖人，包含本人回复和引用，排除单纯转发。只使用 X Search 已证实的原帖链接和事实。
+保留每个指定账号的条目；确实没有可核实的帖子时，对应列表返回空数组。
+用中文写摘要和解读。仅返回 JSON 对象，别在 JSON 文本中插入引用标记。
+格式：
 {{
   "people": {{
     "<handle>": {{
-      "person_summary": "该人物近期动态的整体概述（2-3句话）",
-      "recent_posts": [
-        {{
-          "content_summary": "推文核心内容的简要概述（1-2句话）",
-          "ai_analysis": "对该推文的深度解读（3-5句话，包含技术背景、行业影响等）",
-          "topics": ["相关话题标签1", "话题标签2"],
-          "tweet_url": "推文链接",
-          "posted_at": "发布时间描述",
-          "engagement": "互动情况（高/中/低）"
-        }}
-      ],
-      "top_posts": [
-        {{
-          "content_summary": "推文核心内容的简要概述（1-2句话）",
-          "ai_analysis": "对该推文的深度解读（3-5句话，包含为何重要、传播原因、行业影响等）",
-          "topics": ["相关话题标签1", "话题标签2"],
-          "tweet_url": "推文链接",
-          "posted_at": "发布时间描述",
-          "engagement": "互动情况（高/中/低）",
-          "why_top": "为什么这篇是半年内最重要最火的（1-2句话说明理由）"
-        }}
-      ]
-    }}
-  }}
-}}
-
-要求：
-- recent_posts 必须恰好6条（最新的6条），如不足6条则尽量多获取
-- top_posts 必须恰好3条（半年内最火的3条），按影响力从高到低排序
-- top_posts 中的帖子可以与 recent_posts 重叠（如果最近的帖子也是最火的）
-- 如果某人没有近期推文，也请包含该handle并标注"暂无最新动态"
-- 每条帖子都需要包含 tweet_url"""
-
-    result = call_grok(prompt, x_handles=handles)
-
-    if not result:
-        return {}
-
-    # Try to parse structured JSON first
-    parsed = parse_json_response(result)
-    if parsed and isinstance(parsed, dict) and "people" in parsed:
-        people = parsed["people"]
-        normalized = {}
-        for key, data in people.items():
-            clean_key = key.lstrip("@")
-            # Assign IDs to recent_posts
-            for i, tweet in enumerate(data.get("recent_posts", [])):
-                if not tweet.get("id"):
-                    tweet["id"] = make_tweet_id(clean_key, tweet.get("content_summary", ""), i)
-            # Assign IDs to top_posts
-            for i, tweet in enumerate(data.get("top_posts", [])):
-                if not tweet.get("id"):
-                    tweet["id"] = make_tweet_id(clean_key, tweet.get("content_summary", "") + "_top", i)
-            # Backward compatibility: keep 'tweets' as alias for recent_posts
-            if "recent_posts" in data and "tweets" not in data:
-                data["tweets"] = data["recent_posts"]
-            normalized[clean_key] = data
-        return normalized
-
-    # If structured parse fails, try to use grok-3-mini to structure the raw text
-    print("  Attempting to structure raw response with grok-3-mini...")
-    structure_prompt = f"""请将以下关于AI领域人物推文动态的文本信息，整理成JSON格式。
-涉及的人物handles: {', '.join(handles)}
-
-原始信息：
-{result[:3000]}
-
-请按以下JSON格式返回（直接返回JSON，不要加markdown代码块标记）：
-{{
-  "people": {{
-    "<handle>": {{
-      "person_summary": "该人物近期动态概述",
-      "recent_posts": [
-        {{
-          "content_summary": "推文内容概述",
-          "ai_analysis": "深度解读",
-          "topics": ["话题1"],
-          "tweet_url": "链接",
-          "posted_at": "时间",
-          "engagement": "高/中/低"
-        }}
-      ],
-      "top_posts": [
-        {{
-          "content_summary": "推文内容概述",
-          "ai_analysis": "深度解读",
-          "topics": ["话题1"],
-          "tweet_url": "链接",
-          "posted_at": "时间",
-          "engagement": "高/中/低",
-          "why_top": "为什么重要"
-        }}
-      ]
+      "person_summary": "人物近期动态概述",
+      "recent_posts": [{{"tweet_url": "https://x.com/<handle>/status/<id>", "content_summary": "内容概述",
+        "ai_analysis": "技术背景与影响", "topics": ["话题"], "engagement": "高、中或低"}}],
+      "top_posts": [{{"tweet_url": "https://x.com/<handle>/status/<id>", "content_summary": "内容概述",
+        "ai_analysis": "技术背景与影响", "topics": ["话题"], "engagement": "高、中或低", "why_top": "重要原因"}}]
     }}
   }}
 }}"""
-
-    structured = call_grok_basic(structure_prompt)
-    parsed2 = parse_json_response(structured)
-    if parsed2 and isinstance(parsed2, dict) and "people" in parsed2:
-        people = parsed2["people"]
-        for handle, data in people.items():
-            for i, tweet in enumerate(data.get("recent_posts", [])):
-                if not tweet.get("id"):
-                    tweet["id"] = make_tweet_id(handle, tweet.get("content_summary", ""), i)
-            for i, tweet in enumerate(data.get("top_posts", [])):
-                if not tweet.get("id"):
-                    tweet["id"] = make_tweet_id(handle, tweet.get("content_summary", "") + "_top", i)
-            if "recent_posts" in data and "tweets" not in data:
-                data["tweets"] = data["recent_posts"]
-        return people
-
-    # Last resort: create basic entries from raw text
-    result_dict = {}
-    for inf in batch:
-        handle = inf["handle"]
-        result_dict[handle] = {
-            "person_summary": "数据解析中，请稍后刷新",
-            "recent_posts": [],
-            "top_posts": [],
-            "tweets": []
+    text, citations = call_grok(prompt, x_handles=handles)
+    data = parse_json_response(text)
+    if data is None:
+        data = parse_json_response(call_grok_basic(f"按以下要求整理已有搜索结果。\n{prompt}\n搜索结果：\n{text}"))
+    entries = data.get("people") if isinstance(data, dict) else None
+    people = {key.lstrip("@").casefold(): value for key, value in entries.items()} if isinstance(entries, dict) else {}
+    result = {}
+    for person in batch:
+        handle = person["handle"]
+        entry = people.get(handle.casefold())
+        try:
+            if not isinstance(entry, dict) or not isinstance(entry.get("person_summary"), str):
+                raise ValueError(f"Grok omitted data for @{handle}")
+            recent = normalize_posts(entry.get("recent_posts"), handle, citations, limit)
+            top_posts = normalize_posts(entry.get("top_posts"), handle, citations, top_limit, top=True)
+        except ValueError:
+            if len(batch) == 1:
+                raise
+            print(f"  Retrying @{handle} individually to validate the batch answer")
+            result.update(fetch_batch_tweets([person], limit, top_limit))
+            continue
+        result[handle] = {
+            "person_summary": entry["person_summary"],
+            "recent_posts": recent,
+            "top_posts": top_posts,
+            "tweets": recent,
         }
-    return result_dict
+    return result
 
 
 def fetch_academic_projects() -> list:
     """Fetch latest academic AI projects from academic Twitter accounts."""
-    academic_handles = ["_akhaliq", "paperswithcode", "ykilcher", "rasbt", "arxiv_sanity"]
+    academic_handles = [p["handle"] for p in INFLUENCERS if p["category"] == "academic"][:10]
 
     print("Fetching academic projects...")
 
-    prompt = """请搜索AI学术领域最新的重要论文、开源项目和技术突破。重点关注以下推特账号的分享：@_akhaliq, @paperswithcode, @ykilcher, @rasbt
+    prompt = """请搜索AI学术领域最新的重要论文、开源项目和技术突破。重点关注以下推特账号的分享：指定的学术信源账号
 
 请按以下JSON格式返回结果（直接返回JSON，不要加markdown代码块标记）：
 {
@@ -330,22 +279,18 @@ def fetch_academic_projects() -> list:
 
 请尽量获取20-30个最新的重要项目，覆盖尽可能多的分类领域。"""
 
-    result = call_grok(prompt, x_handles=academic_handles)
-
-    if not result:
-        return []
-
-    parsed = parse_json_response(result)
-    if parsed:
-        projects = parsed.get("projects", []) if isinstance(parsed, dict) else parsed
-        for i, proj in enumerate(projects):
-            if not proj.get("id"):
-                proj["id"] = hashlib.md5(
-                    f"academic_{proj.get('title', '')}_{i}".encode()
-                ).hexdigest()[:12]
-        return projects
-
-    return []
+    text, _ = call_grok(prompt, x_handles=academic_handles)
+    parsed = parse_json_response(text)
+    projects = parsed.get("projects") if isinstance(parsed, dict) else parsed
+    if not isinstance(projects, list) or not all(
+        isinstance(p, dict) and isinstance(p.get("title"), str) and p["title"].strip()
+        for p in projects
+    ):
+        raise ValueError("Grok returned invalid academic projects")
+    for i, proj in enumerate(projects):
+        if not proj.get("id"):
+            proj["id"] = hashlib.md5(f"academic_{proj['title']}_{i}".encode()).hexdigest()[:12]
+    return projects
 
 
 def fetch_trending_summary() -> dict:
@@ -374,142 +319,105 @@ def fetch_trending_summary() -> dict:
   ]
 }"""
 
-    result = call_grok(prompt)
-
-    if not result:
-        return {
-            "headline": "AI领域持续快速发展",
-            "summary": "暂无最新动态摘要",
-            "hot_topics": [],
-            "key_developments": []
-        }
-
-    parsed = parse_json_response(result)
-    if parsed and isinstance(parsed, dict):
-        return parsed
-
-    return {
-        "headline": "AI领域持续快速发展",
-        "summary": result[:500] if result else "暂无最新动态摘要",
-        "hot_topics": [],
-        "key_developments": []
-    }
+    text, _ = call_grok(prompt)
+    parsed = parse_json_response(text)
+    if not isinstance(parsed, dict) or not (
+        isinstance(parsed.get("headline"), str) and isinstance(parsed.get("summary"), str)
+        and isinstance(parsed.get("hot_topics"), list) and isinstance(parsed.get("key_developments"), list)
+    ):
+        raise ValueError("Grok returned an invalid trending summary")
+    return parsed
 
 
-def main():
-    """Main entry point."""
-    if not XAI_API_KEY:
-        print("ERROR: XAI_API_KEY environment variable not set")
-        sys.exit(1)
+def write_json_files(files: dict[Path, dict]) -> None:
+    """Stage every JSON file before replacing existing data."""
+    directory = next(iter(files)).parent
+    directory.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=directory) as temporary:
+        staging = Path(temporary)
+        for target, data in files.items():
+            (staging / target.name).write_text(
+                json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            )
+        for target in files:
+            (staging / target.name).replace(target)
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Fetch and analyze X posts with Grok.")
+    parser.add_argument("--handle", help="Fetch one configured X account")
+    parser.add_argument("--limit", type=int, help="Recent posts per account (default: 1 for preview, 6 for full refresh)")
+    parser.add_argument("--output", type=Path, help="Preview JSON file with --handle, otherwise an output directory")
+    args = parser.parse_args()
+    if args.limit is not None and not 1 <= args.limit <= 10:
+        parser.error("--limit must be between 1 and 10")
+
+    people = {}
+    for person in INFLUENCERS:
+        handle = person["handle"]
+        if not re.fullmatch(r"[A-Za-z0-9_]{1,15}", handle) or handle.casefold() in people or person["category"] not in CATEGORIES:
+            raise ValueError(f"Invalid or duplicate influencer configuration for @{handle}")
+        people[handle.casefold()] = person
+    if not people:
+        raise ValueError("No influencers are configured")
+    if not XAI_API_KEY or not API_BASE or not MODEL:
+        raise ValueError("Set XAI_API_KEY and configure XAI_API_BASE and XAI_MODEL as needed")
+
     now = datetime.now(timezone.utc)
     timestamp = now.isoformat()
+    if args.handle:
+        person = people.get(args.handle.removeprefix("@").casefold())
+        if person is None:
+            parser.error("--handle must be listed in scripts/influencers.json")
+        handle = person["handle"]
+        output = args.output or PREVIEW_DIR / f"{handle}.json"
+        if output.resolve().is_relative_to(OUTPUT_DIR.resolve()):
+            parser.error("single-account previews need a path outside client/public/data/")
+        result = fetch_batch_tweets([person], limit=args.limit or 1, top_limit=0)[handle]
+        preview = {**person, **result, "fetched_at": timestamp}
+        write_json_files({output: preview})
+        print(f"Wrote {len(preview['recent_posts'])} recent posts for @{handle} to {output}")
+        return
 
-    print(f"=== AI Pulse Data Fetch - {timestamp} ===\n")
-
-    # 1. Fetch trending summary
+    output = args.output or OUTPUT_DIR
+    roster = list(people.values())
     trending = fetch_trending_summary()
     trending["fetched_at"] = timestamp
-
-    # Save trending immediately
-    with open(OUTPUT_DIR / "trending.json", "w", encoding="utf-8") as f:
-        json.dump(trending, f, ensure_ascii=False, indent=2)
-    print("Wrote trending.json\n")
-
-    # 2. Fetch tweets for influencers in batches
-    all_tweets = {}
-
-    # Deduplicate influencers by handle
-    seen_handles = set()
-    unique_influencers = []
-    for inf in INFLUENCERS:
-        if inf["handle"] not in seen_handles:
-            seen_handles.add(inf["handle"])
-            unique_influencers.append(inf)
-
-    # Group influencers into batches (3 per batch for reliable JSON parsing)
-    batches = []
-    current_batch = []
-    for inf in unique_influencers:
-        current_batch.append(inf)
-        if len(current_batch) >= 3:
-            batches.append(current_batch)
-            current_batch = []
-    if current_batch:
-        batches.append(current_batch)
-
-    for i, batch in enumerate(batches):
-        print(f"\nBatch {i+1}/{len(batches)}:")
-        try:
-            batch_results = fetch_batch_tweets(batch)
-            for inf in batch:
-                handle = inf["handle"]
-                if handle in batch_results:
-                    all_tweets[handle] = {
-                        **inf,
-                        **batch_results[handle],
-                        "fetched_at": timestamp
-                    }
-                else:
-                    all_tweets[handle] = {
-                        **inf,
-                        "recent_posts": [],
-                        "top_posts": [],
-                        "tweets": [],
-                        "person_summary": "暂无最新动态",
-                        "fetched_at": timestamp
-                    }
-        except Exception as e:
-            print(f"  ERROR in batch: {e}")
-            for inf in batch:
-                all_tweets[inf["handle"]] = {
-                    **inf,
-                    "recent_posts": [],
-                    "top_posts": [],
-                    "tweets": [],
-                    "person_summary": "数据获取失败，将在下次刷新时重试",
-                    "fetched_at": timestamp
-                }
-
-        # Save progress after each batch
-        tweets_output = {
-            "meta": {
-                "fetched_at": timestamp,
-                "next_update": (now + timedelta(hours=24)).isoformat(),
-                "total_influencers": len(unique_influencers),
-                "version": "3.0"
-            },
-            "categories": CATEGORIES,
-            "influencers": all_tweets
-        }
-        with open(OUTPUT_DIR / "tweets.json", "w", encoding="utf-8") as f:
-            json.dump(tweets_output, f, ensure_ascii=False, indent=2)
-        print(f"  Saved progress ({len(all_tweets)} influencers so far)")
-
-        # Rate limiting between batches
-        if i < len(batches) - 1:
+    tweets = {}
+    for offset in range(0, len(roster), 3):
+        batch = roster[offset:offset + 3]
+        fetched = fetch_batch_tweets(batch, limit=args.limit or 6)
+        for person in batch:
+            handle = person["handle"]
+            tweets[handle] = {**person, **fetched[handle], "fetched_at": timestamp}
+        if offset + 3 < len(roster):
             time.sleep(3)
 
-    print(f"\nWrote tweets.json ({len(all_tweets)} influencers)")
-
-    # 3. Fetch academic projects
+    if not any(person["recent_posts"] or person["top_posts"] for person in tweets.values()):
+        raise ValueError("X Search returned no posts for any configured account")
     academic = fetch_academic_projects()
-
-    academic_output = {
-        "meta": {
-            "fetched_at": timestamp,
-            "total_projects": len(academic)
+    write_json_files({
+        output / "trending.json": trending,
+        output / "tweets.json": {
+            "meta": {
+                "fetched_at": timestamp,
+                "next_update": (now + timedelta(days=1)).isoformat(),
+                "total_influencers": len(roster),
+                "version": "3.0",
+            },
+            "categories": CATEGORIES,
+            "influencers": tweets,
         },
-        "projects": academic
-    }
-
-    with open(OUTPUT_DIR / "academic.json", "w", encoding="utf-8") as f:
-        json.dump(academic_output, f, ensure_ascii=False, indent=2)
-    print(f"Wrote academic.json ({len(academic)} projects)")
-
-    print(f"\n=== Fetch complete at {datetime.now(timezone.utc).isoformat()} ===")
+        output / "academic.json": {
+            "meta": {"fetched_at": timestamp, "total_projects": len(academic)},
+            "projects": academic,
+        },
+    })
+    print(f"Updated {len(tweets)} influencer entries in {output}")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (KeyError, OSError, RuntimeError, ValueError) as error:
+        sys.exit(f"ERROR: {error}")

@@ -1,28 +1,17 @@
 #!/usr/bin/env python3
 """
-Retry fetching data for influencers that failed with 403 errors.
-Runs after a delay to avoid rate limiting.
+Retry fetching data for influencers with empty post lists.
 """
 import json
-import os
 import sys
 import time
 from datetime import datetime, timezone
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
-
-# Import functions from fetch_data
-from fetch_data import call_grok, parse_json_response, make_tweet_id, fetch_batch_tweets
-
-XAI_API_KEY = os.environ.get("XAI_API_KEY", "")
-OUTPUT_DIR = Path(__file__).parent.parent / "client" / "public" / "data"
-SCRIPT_DIR = Path(__file__).parent
+from fetch_data import API_BASE, INFLUENCERS, MODEL, OUTPUT_DIR, XAI_API_KEY, fetch_batch_tweets, write_json_files
 
 def main():
-    if not XAI_API_KEY:
-        print("ERROR: XAI_API_KEY not set")
-        sys.exit(1)
+    if not XAI_API_KEY or not API_BASE or not MODEL:
+        raise ValueError("Set XAI_API_KEY and configure XAI_API_BASE and XAI_MODEL as needed")
 
     # Load current data
     tweets_path = OUTPUT_DIR / "tweets.json"
@@ -31,8 +20,9 @@ def main():
 
     # Find empty influencers
     empty_influencers = []
-    for handle, inf in data["influencers"].items():
-        if not inf.get("recent_posts") and not inf.get("top_posts"):
+    for inf in INFLUENCERS:
+        previous = data["influencers"].get(inf["handle"])
+        if previous and not previous.get("recent_posts") and not previous.get("top_posts"):
             empty_influencers.append(inf)
 
     print(f"Found {len(empty_influencers)} influencers with no data")
@@ -55,33 +45,21 @@ def main():
             print("  Waiting 60s to avoid rate limits...")
             time.sleep(60)
         
-        try:
-            batch_results = fetch_batch_tweets(batch)
-            for inf in batch:
-                handle = inf["handle"]
-                if handle in batch_results and (
-                    batch_results[handle].get("recent_posts") or 
-                    batch_results[handle].get("top_posts")
-                ):
-                    data["influencers"][handle].update({
-                        **batch_results[handle],
-                        "fetched_at": timestamp
-                    })
-                    print(f"  ✓ Got data for @{handle}")
-                else:
-                    print(f"  ✗ Still no data for @{handle}")
-        except Exception as e:
-            print(f"  ERROR: {e}")
+        batch_results = fetch_batch_tweets(batch)
+        for handle, posts in batch_results.items():
+            if posts["recent_posts"] or posts["top_posts"]:
+                data["influencers"][handle].update({**posts, "fetched_at": timestamp})
+                print(f"  Got data for @{handle}")
+            else:
+                print(f"  Still no data for @{handle}")
 
-        # Save progress after each batch
-        with open(tweets_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        print(f"  Saved progress")
-
-    # Count final results
+    write_json_files({tweets_path: data})
     has_data = sum(1 for inf in data["influencers"].values() 
                    if inf.get("recent_posts") or inf.get("top_posts"))
     print(f"\nFinal: {has_data}/{len(data['influencers'])} influencers have data")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (KeyError, OSError, RuntimeError, ValueError) as error:
+        sys.exit(f"ERROR: {error}")

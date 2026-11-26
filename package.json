@@ -11,8 +11,6 @@
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
-    "news:update": "python3 scripts/update_news.py",
-    "test:news": "python3 -m unittest discover -s scripts -p 'test_*.py'",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
   },
   "dependencies": {

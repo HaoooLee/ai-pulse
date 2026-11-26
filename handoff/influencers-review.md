@@ -18,8 +18,7 @@
 - 师兄最初列出的 25 位人物在修改版中均有对应条目。
 - 原名单缺少唐杰、George Hotz；另补黄仁勋。额外选取的 5 位为 Jakub Pachocki、Tom Brown、Tianqi Chen、Woosuk Kwon、Lianmin Zheng。
 - categories 和 academic_categories 原样保留；新增条目均使用已有分类。Infra 人物暂归入现有 llm_research。
-- 本目录完整 JSON 与 `scripts/influencers.json` 一致；保留原字段、分类及存量顺序。未修改条目不代表其每项职务均已独立核实。
-- 正式更新使用官方 RSS + PackyAPI，不依赖 X 搜索；人物关联仅依据原文作者、明确姓名或账号提及。
+- 这 75 条已用于 [原生人物配置](../scripts/influencers.json)，沿用 10 月 2 日版本的字段、分类及顺序。未修改条目的职务沿用当时原值。
 
 ## 新增人物
 
@@ -83,4 +82,4 @@ Deepak Pathak 的 `pathak2206` 已由 [CMU 本人主页](https://www.cs.cmu.edu/
 ## 验证
 
 最终 JSON 共 75 条，可解析、字段类型正常、账号大小写不敏感去重、分类引用有效。师兄提供的原名单 25 人及补充 5 人全部覆盖，另包含黄仁勋。分类结构未改动。本目录 JSON 与实际运行配置逐字一致。
-这些检查不保证每位人物都有个人 RSS 或当前可采集的 X 内容；运行链路及限制见 `../LOCAL_REPRODUCTION.md`。
+当前 X 搜索的使用与验收方式见 [交接说明](README.md)。

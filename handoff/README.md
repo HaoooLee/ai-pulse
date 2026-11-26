@@ -1,6 +1,6 @@
 # AI Pulse 运行与交接
 
-在仓库根目录运行命令。Python 3.11+ 用于抓取和解读 X 帖子。
+在仓库根目录使用 Python 3.11+。首次使用按第 1 节配置，然后复制第 2 节的一行命令。
 
 ## 1. 安装和配置
 
@@ -8,18 +8,18 @@
 python -m pip install requests
 ```
 
-在当前终端设置以下环境变量。Key 放在本地终端或 Secrets。
+现在使用支持 Grok X Search 的灵算中转站，配置读取 `XAI_*` 环境变量。旧 RSS／PackyAPI 流程原来用的 `PACKY_*` 随旧脚本移除。
 
 | 变量 | 用途 | 灵算示例 |
 |---|---|---|
 | `XAI_API_KEY` | 支持 Grok X Search 的 Key | 你的 Key |
-| `XAI_API_BASE` | API 基础地址，包含 `/v1` | `https://api.lingsuan.si/v1` |
+| `XAI_API_BASE` | HTTPS 基础地址，末尾的 `/v1` 可省略 | `https://api.lingsuan.si` |
 | `XAI_MODEL` | 搜索和解读用的模型 | `grok-4.7` |
 
 PowerShell
 
 ```powershell
-$env:XAI_API_BASE = 'https://api.lingsuan.si/v1'
+$env:XAI_API_BASE = 'https://api.lingsuan.si'
 $env:XAI_MODEL = 'grok-4.7'
 $env:XAI_API_KEY = '填入你的 Key'
 ```
@@ -27,10 +27,12 @@ $env:XAI_API_KEY = '填入你的 Key'
 Bash
 
 ```bash
-export XAI_API_BASE=https://api.lingsuan.si/v1
+export XAI_API_BASE=https://api.lingsuan.si
 export XAI_MODEL=grok-4.7
 export XAI_API_KEY='填入你的 Key'
 ```
+
+接口地址填写站点地址或以 `/v1` 结尾的基础地址。脚本会分别请求 `/v1/responses` 和 `/v1/chat/completions`。Key 放在当前终端或 Actions Secrets。网页登录单独使用根目录的 [`.env.example`](../.env.example) 配置。
 
 ## 2. 一行抓取并验收
 
@@ -38,9 +40,9 @@ export XAI_API_KEY='填入你的 Key'
 python scripts/fetch_data.py --handle jietang --limit 1 --output handoff/output/jietang.json
 ```
 
-成功时终端打印 `Wrote 1 recent posts for @jietang`。打开输出的 `recent_posts[0]`，用 `tweet_url` 核对作者和原帖。`posted_at` 是 UTC 时间，`content_summary` 和 `ai_analysis` 是中文摘要和解读。已验证的样例见[验收记录](verification.md)。
+成功时终端打印 `Wrote 1 recent posts for @jietang`。打开输出的 `recent_posts[0]`，用 `tweet_url` 核对作者和原帖。`posted_at` 是 UTC 时间，`content_summary` 和 `ai_analysis` 是中文摘要和解读。打印 `Wrote 0` 表示本次搜索未核实到帖子。已验证的样例见[验收记录](verification.md)。
 
-`--handle` 从 [人物配置](../scripts/influencers.json) 选，`--limit` 可设为 1 至 10。省略预览路径时输出到 `handoff/output/<账号>.json`。抓取或校验失败会报错退出，旧文件保留。
+`--handle` 从 [人物配置](../scripts/influencers.json) 选，`--limit` 可设为 1 至 10。省略预览路径时输出到 `handoff/output/<账号>.json`。抓取或校验失败会报错退出，旧文件保留。遇到 HTTP 401 或 403 时先核对地址、Key 和模型是否属于同一个中转站。
 
 ## 3. 运行原版全量流程
 

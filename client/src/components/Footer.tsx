@@ -18,7 +18,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
-              聚合AI领域顶尖人物的推特动态和学术前沿，通过AI深度解读，为你呈现高信噪比的每日资讯。
+              汇集大模型与 AI 基础设施的公开资讯，通过 Grok 提供中文摘要与分析。
             </p>
           </div>
 
@@ -26,7 +26,7 @@ export default function Footer() {
           <div className="flex flex-col gap-2 text-sm text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
             <span>数据来源：X / Twitter</span>
             <span>AI解读：Grok by xAI</span>
-            <span>更新频率：每12小时</span>
+            <span>更新频率：每日</span>
           </div>
         </div>
 

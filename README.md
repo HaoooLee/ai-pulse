@@ -6,14 +6,14 @@
 
 我们的运行说明见[交接文档](handoff/README.md)，包含 Grok 配置、一行抓取和人物名单维护。
 
-聚合40+位AI领域顶尖人物的推特动态，通过Grok AI深度解读，每12小时自动更新，为你呈现高信噪比的AI资讯。
+聚合大模型与 AI Infra 人物的 X 动态，提供 Grok 中文解读和学术前沿。
 
 ## 功能特性
 
 - **大V动态追踪**：覆盖OpenAI、Google DeepMind、Anthropic、xAI四大实验室及顶尖独立研究者
 - **AI深度解读**：每条推文都经过Grok AI分析，提供技术背景和行业影响解读
 - **学术前沿**：聚合最新AI论文、开源项目和技术突破
-- **每12小时自动更新**：通过GitHub Actions定时获取最新数据
+- **定时更新**：通过 GitHub Actions 每天获取最新数据
 - **收藏功能**：支持本地收藏推文和学术项目
 - **响应式设计**：适配桌面和移动端
 
@@ -21,8 +21,8 @@
 
 - **前端**：React 19 + Vite + Tailwind CSS 4 + shadcn/ui
 - **数据获取**：Python脚本 + xAI Grok API（Responses API with X Search）
-- **自动化**：GitHub Actions 每12小时定时运行
-- **部署**：GitHub Pages 静态托管
+- **自动化**：GitHub Actions 每天定时运行
+- **部署**：Vercel
 
 ## 配色方案
 
@@ -35,6 +35,8 @@
 
 ### 本地开发
 
+使用 Node.js 22+ 和 pnpm。网页登录配置见 [`.env.example`](.env.example)。
+
 ```bash
 pnpm install
 pnpm dev
@@ -42,10 +44,7 @@ pnpm dev
 
 ### 手动获取数据
 
-```bash
-export XAI_API_KEY="your-xai-api-key"
-python scripts/fetch_data.py
-```
+Grok 中转站配置、一行运行和验收结果见[交接说明](handoff/README.md)。
 
 ## GitHub Actions 配置
 
@@ -53,12 +52,9 @@ python scripts/fetch_data.py
 
 | Secret 名称 | 说明 |
 |---|---|
-| `XAI_API_KEY` | xAI API Key，用于调用Grok API获取推特数据 |
+| `XAI_API_KEY` | 支持 X Search 的 Grok Key |
 
-配置完成后，GitHub Actions 会：
-1. 每12小时（UTC 00:00 和 12:00）自动运行数据获取脚本
-2. 将获取的数据提交到仓库
-3. 触发GitHub Pages自动部署
+使用中转站时，在 Actions Variables 配置 `XAI_API_BASE` 和 `XAI_MODEL`。
 
 ## 项目结构
 
@@ -78,7 +74,7 @@ ai-pulse/
 │   └── influencers.json    # 追踪人物配置
 ├── .github/workflows/
 │   ├── fetch-data.yml      # 定时数据获取
-│   └── deploy.yml          # GitHub Pages部署
+│   └── deploy.yml          # Vercel 部署
 └── README.md
 ```
 

@@ -16,6 +16,7 @@ import tempfile
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import requests
 
@@ -40,12 +41,24 @@ INFLUENCERS = CONFIG["influencers"]
 CATEGORIES = CONFIG["categories"]
 
 
+def grok_base_url(base: str) -> str:
+    parsed = urlsplit(base)
+    path = parsed.path.rstrip("/") or "/v1"
+    if (
+        parsed.scheme != "https" or not parsed.hostname or parsed.username is not None
+        or parsed.query or parsed.fragment or not path.endswith("/v1")
+    ):
+        raise ValueError("XAI_API_BASE must be an HTTPS origin or a base URL ending in /v1")
+    return parsed._replace(path=path).geturl()
+
+
 def request_grok(endpoint: str, payload: dict, timeout: int) -> dict:
+    url = f"{grok_base_url(API_BASE)}/{endpoint}"
     headers = {"Authorization": f"Bearer {XAI_API_KEY}"}
     for attempt in range(3):
         try:
             response = requests.post(
-                f"{API_BASE}/{endpoint}", headers=headers, json=payload,
+                url, headers=headers, json=payload,
                 timeout=timeout, allow_redirects=False,
             )
         except (requests.Timeout, requests.ConnectionError):
@@ -153,10 +166,10 @@ def make_tweet_id(handle: str, content: str, index: int) -> str:
 
 
 def normalize_posts(posts: list, handle: str, citations: set[str], limit: int, top: bool = False) -> list[dict]:
-    if not isinstance(posts, list):
-        raise ValueError(f"Grok did not return a post list for @{handle}")
     if not limit:
         return []
+    if not isinstance(posts, list):
+        raise ValueError(f"Grok did not return a post list for @{handle}")
     verified = {}
     for post in posts:
         if not isinstance(post, dict):
@@ -212,16 +225,23 @@ def fetch_batch_tweets(batch: list[dict], limit: int = 6, top_limit: int = 3) ->
     data = parse_json_response(text)
     if data is None:
         data = parse_json_response(call_grok_basic(f"按以下要求整理已有搜索结果。\n{prompt}\n搜索结果：\n{text}"))
-    if not isinstance(data, dict) or not isinstance(data.get("people"), dict):
-        raise ValueError("Grok did not return a people object")
-    people = {key.lstrip("@").casefold(): value for key, value in data["people"].items()}
+    entries = data.get("people") if isinstance(data, dict) else None
+    people = {key.lstrip("@").casefold(): value for key, value in entries.items()} if isinstance(entries, dict) else {}
     result = {}
-    for handle in handles:
+    for person in batch:
+        handle = person["handle"]
         entry = people.get(handle.casefold())
-        if not isinstance(entry, dict) or not isinstance(entry.get("person_summary"), str):
-            raise ValueError(f"Grok omitted data for @{handle}")
-        recent = normalize_posts(entry.get("recent_posts"), handle, citations, limit)
-        top_posts = normalize_posts(entry.get("top_posts"), handle, citations, top_limit, top=True)
+        try:
+            if not isinstance(entry, dict) or not isinstance(entry.get("person_summary"), str):
+                raise ValueError(f"Grok omitted data for @{handle}")
+            recent = normalize_posts(entry.get("recent_posts"), handle, citations, limit)
+            top_posts = normalize_posts(entry.get("top_posts"), handle, citations, top_limit, top=True)
+        except ValueError:
+            if len(batch) == 1:
+                raise
+            print(f"  Retrying @{handle} individually to validate the batch answer")
+            result.update(fetch_batch_tweets([person], limit, top_limit))
+            continue
         result[handle] = {
             "person_summary": entry["person_summary"],
             "recent_posts": recent,

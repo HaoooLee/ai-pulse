@@ -112,3 +112,10 @@ temp/
 # Manus debug logs
 .manus-logs/
 
+# Vercel local environment
+.vercel/
+
+# Python local environment and bytecode
+.venv/
+__pycache__/
+*.py[cod]

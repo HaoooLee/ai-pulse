@@ -51,7 +51,7 @@ class NativeFetchTests(unittest.TestCase):
             target = Path(directory) / "jietang.json"
             argv = ["fetch_data.py", "--handle", "jietang", "--limit", "1", "--output", str(target)]
             with patch.object(sys, "argv", argv), patch.multiple(
-                pulse, XAI_API_KEY="test-key", API_BASE="https://example.test/v1", MODEL="test-model"
+                pulse, XAI_API_KEY="test-key", API_BASE="https://example.test", MODEL="test-model"
             ), patch("fetch_data.requests.post", return_value=reply) as post:
                 pulse.main()
             result = json.loads(target.read_text(encoding="utf-8"))
@@ -76,6 +76,24 @@ class NativeFetchTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "HTTP 403"):
                 pulse.call_grok("test", ["jietang"])
         post.assert_called_once()
+
+    def test_rejects_an_endpoint_url_before_sending_credentials(self):
+        with patch.object(pulse, "API_BASE", "https://example.test/v1/responses"), patch(
+            "fetch_data.requests.post"
+        ) as post:
+            with self.assertRaisesRegex(ValueError, "XAI_API_BASE"):
+                pulse.call_grok("test", ["jietang"])
+        post.assert_not_called()
+
+    def test_batch_retries_only_the_missing_account(self):
+        batch = [p for p in pulse.INFLUENCERS if p["handle"] in {"jietang", "sama"}]
+        replies = [grok_response({"people": {"sama": person_result()}}),
+                   grok_response({"people": {"jietang": person_result([TWEET])}}, [POST_ID])]
+        with patch("fetch_data.request_grok", side_effect=replies) as request:
+            result = pulse.fetch_batch_tweets(batch, limit=1, top_limit=0)
+        self.assertEqual(set(result), {"sama", "jietang"})
+        self.assertEqual(result["jietang"]["recent_posts"][0]["tweet_url"], POST_URL)
+        self.assertEqual(request.call_args.args[1]["tools"][0]["allowed_x_handles"], ["jietang"])
 
     def test_a_new_configured_account_can_be_selected(self):
         person = {"handle": "NewResearcher", "name": "New Researcher",
